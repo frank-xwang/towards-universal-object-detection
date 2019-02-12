@@ -149,6 +149,9 @@ def parse_args():
                         default="False", type=str)
     parser.add_argument('--use_mux', dest='use_mux',
                         help='whether use BN MUX',
+                        default="False", type=str)    
+    parser.add_argument('--domain_pred', dest='domain_pred',
+                        help='whether add domain prediction loss for domain attention module',
                         default="False", type=str)
     args = parser.parse_args()
     return args                           
@@ -205,7 +208,7 @@ if __name__ == '__main__':
     cfg.sample_mode, cfg.VGG_ORIGIN, cfg.USE_ALL_GT, cfg.ignore_people, cfg.filter_empty, cfg.DEBUG, args.set_cfgs \
     = get_datasets_info('pascal_voc_0712')
 
-    cfg.datasets_list                 = ['KITTIVOC','widerface','pascal_voc_0712','Kitchen','LISA']
+    cfg.datasets_list                 = ['KITTIVOC','widerface']#,'pascal_voc_0712','Kitchen','LISA']
     # cfg.datasets_list                 = ['LISA','pascal_voc_0712','Kitchen','coco','clipart','watercolor','comic','widerface','dota','deeplesion','KITTIVOC']
     cfg.imdb_name_list                = univ_info(cfg.datasets_list, 'imdb_name')
     cfg.imdbval_name_list             = univ_info(cfg.datasets_list, 'imdbval_name')
@@ -250,6 +253,7 @@ if __name__ == '__main__':
     cfg.Only_FinetuneBN = False
     cfg.reinit_rpn = False
     cfg.nums = 0
+    cfg.domain_pred = args.domain_pred == "True"
 
     if args.cfg_file is not None:
         cfg_from_file(args.cfg_file)
@@ -272,6 +276,7 @@ if __name__ == '__main__':
     #torch.backends.cudnn.benchmark = True
     if torch.cuda.is_available() and not args.cuda:
         print("WARNING: You have a CUDA device, so you should probably run with --cuda")
+    print("INFO: Domain Prediction is: ", cfg.domain_pred)
 
     # train set
     # -- Note: Use validation set and disable the flipped to enable faster loading.
@@ -297,8 +302,8 @@ if __name__ == '__main__':
         cfg.TRAIN.SCALES= cfg.train_scales_list[i]
         cfg.MAX_NUM_GT_BOXES = cfg.MAX_NUM_GT_BOXES_LIST[i]
         cfg.TRAIN.USE_FLIPPED = args.USE_FLIPPED == 1
-        if 'coco' in cfg.dataset:
-            cfg.TRAIN.USE_FLIPPED = False
+        if 'deeplesion' == cfg.dataset:
+            cfg.TRAIN.USE_FLIPPED = cfg.filp_image[i]
         cfg.ANCHOR_SCALES = cfg.ANCHOR_SCALES_LIST[i] 
         cfg.ANCHOR_RATIOS = cfg.ANCHOR_RATIOS_LIST[i]
         
@@ -425,7 +430,6 @@ if __name__ == '__main__':
             lr=0.002
         else:
             args.start_epoch = checkpoint['epoch']
-        #lr = args.lr
         print('lr is: ', lr)
         if 'pooling_mode' in checkpoint.keys():
             print('loading faster-rcnn based on: %s' %(checkpoint['pooling_mode']))
@@ -472,22 +476,10 @@ if __name__ == '__main__':
         samples = defaultdict(list)
         loss_temp = np.zeros((len(data_iter_list)))
 
-        gpu_data_time = 0
-        cpu_data_time = 0
-        forward_time = 0
-        backward_time = 0   
-        cfg.rcnn_time = 0
-        cfg.rpn_time = 0
-        cfg.backbone_time = 0
-        cfg.rpn_forward_time = 0
-        cfg.rpn_rois_process = 0
-        cfg.rpn_forward_conv_time = 0
-
         for step in range(iters_per_epoch):
             # build a data batch list for storing data batch
             # from different dataloader
             for cls_ind in range(len(data_iter_list)):
-                iter_start = time.time()
                 samples[cls_ind].append(step)
                 cfg.cls_ind = cls_ind
                 cfg.TRAIN.BATCH_SIZE = cfg.train_batchsize_list[cls_ind]
@@ -509,21 +501,11 @@ if __name__ == '__main__':
                     data_iter_list[cls_ind] = iter(cycle(dataloader_list[cls_ind]))
                     #data_iter_list[cls_ind] = iter(dataloader_list[cls_ind])
                     data = next(data_iter_list[cls_ind])
-                iter_cpu_data = time.time()
-                cpu_data_time += iter_cpu_data - iter_start
-
-                # im_data_list[cls_ind].data.resize_(data[0].size()).copy_(data[0])
-                # im_info_list[cls_ind].data.resize_(data[1].size()).copy_(data[1])
-                # gt_boxes_list[cls_ind].data.resize_(data[2].size()).copy_(data[2])
-                # num_boxes_list[cls_ind].data.resize_(data[3].size()).copy_(data[3])
 
                 im_data_list[cls_ind].data = data[0].cuda()
                 im_info_list[cls_ind].data = data[1].cuda()
                 gt_boxes_list[cls_ind].data = data[2].cuda()
                 num_boxes_list[cls_ind].data = data[3].cuda()
-
-                iter_data_finish = time.time()
-                gpu_data_time += iter_data_finish - iter_cpu_data
 
                 fasterRCNN.zero_grad()
 
@@ -532,41 +514,9 @@ if __name__ == '__main__':
                 RCNN_loss_cls, RCNN_loss_bbox, \
                 rois_label = fasterRCNN(im_data_list[cls_ind], im_info_list[cls_ind], gt_boxes_list[cls_ind], num_boxes_list[cls_ind], cls_ind)
 
-                iter_forward_time = time.time()
-                forward_time += iter_forward_time - iter_data_finish
-
                 loss = rpn_loss_cls.mean() + rpn_loss_box.mean() \
                     + RCNN_loss_cls.mean() + RCNN_loss_bbox.mean()
-                loss_temp[cls_ind] += loss.data[0]
-
-                ############## Plot traing loss process
-                if cfg.plot_curve:
-                    current_loss[cls_ind].append(loss.data[0])
-                    plt.subplot(len(cfg.num_classes)+2,1,cls_ind+1)
-                    plt.cla()
-                    plt.plot(samples[cls_ind], current_loss[cls_ind])
-                    plt.title('Current avg loss is: ' + str(np.mean(current_loss[cls_ind])))
-                    plt.ylabel(overall_name[cls_ind])
-                    plt.pause(0.0001)
-
-                    if step % 100 == 0:
-                        overall_loss[cls_ind].append(np.mean(current_loss[cls_ind]))
-                        if cls_ind == 1:
-                            overall_n+= 1
-                        overall_process[cls_ind].append(overall_n)
-
-                    if cls_ind == len(cfg.num_classes)-1:
-                        plt.subplot(len(cfg.num_classes)+2,1,len(cfg.num_classes)+2)
-                        plt.cla()
-                        for i in range(len(cfg.num_classes)):
-                            plt.plot(overall_process[i], overall_loss[i])
-                        if len(cfg.num_classes) == 3:
-                            plt.legend(('kitti','pascal','widerface'),loc = 'upper right')
-                        if len(cfg.num_classes) == 2:
-                            plt.legend(('kitti','pascal'),loc = 'upper right')
-                        plt.ylabel('Overall loss')
-                        plt.xlabel('Sample number(%100)')
-                        plt.pause(0.0001)
+                loss_temp[cls_ind] += loss.data.item()
 
                 # backward after training all datasets
                 if args.backward_together:
@@ -593,26 +543,23 @@ if __name__ == '__main__':
                     optimizer.step()
                     #check_grad(fasterRCNN)
 
-                iter_finish = time.time()
-                backward_time += iter_finish - iter_forward_time
-
                 if step % args.disp_interval == 0:
                     end = time.time()
                     if step > 0:
                         loss_temp[cls_ind] /= args.disp_interval
 
                     if args.mGPUs:
-                        loss_rpn_cls = rpn_loss_cls.mean().data[0]
-                        loss_rpn_box = rpn_loss_box.mean().data[0]
-                        loss_rcnn_cls = RCNN_loss_cls.mean().data[0]
-                        loss_rcnn_box = RCNN_loss_bbox.mean().data[0]
+                        loss_rpn_cls = rpn_loss_cls.mean().data.item()
+                        loss_rpn_box = rpn_loss_box.mean().data.item()
+                        loss_rcnn_cls = RCNN_loss_cls.mean().data.item()
+                        loss_rcnn_box = RCNN_loss_bbox.mean().data.item()
                         fg_cnt = torch.sum(rois_label.data.ne(0))
                         bg_cnt = rois_label.data.numel() - fg_cnt
                     else:
-                        loss_rpn_cls = rpn_loss_cls.data[0]
-                        loss_rpn_box = rpn_loss_box.data[0]
-                        loss_rcnn_cls = RCNN_loss_cls.data[0]
-                        loss_rcnn_box = RCNN_loss_bbox.data[0]
+                        loss_rpn_cls = rpn_loss_cls.data.item()
+                        loss_rpn_box = rpn_loss_box.data.item()
+                        loss_rcnn_cls = RCNN_loss_cls.data.item()
+                        loss_rcnn_box = RCNN_loss_bbox.data.item()
                         fg_cnt = torch.sum(rois_label.data.ne(0))
                         bg_cnt = rois_label.data.numel() - fg_cnt
                     if cfg.epoch_diff:
@@ -635,21 +582,6 @@ if __name__ == '__main__':
 
                     loss_temp[cls_ind] = 0
                     start = time.time()
-
-            if step % 50 == 0:
-                gc.collect()
-                print('Loading data cost: ', cpu_data_time + gpu_data_time)
-                print(" *Loading data by cpu cost: ", cpu_data_time)
-                print(' *Process data by gpu cost: ', gpu_data_time)
-                print('Forward data cost: ', forward_time)
-                print(' *Forward Backbone cost: ', cfg.backbone_time)
-                print(' *Forward rpn cost: ', cfg.rpn_time)
-                print('  #RPN forward time cost: ', cfg.rpn_forward_time)
-                print('   -RPN forward conv cost: ', cfg.rpn_forward_conv_time)
-                print('   -RPN propose rois cost: ', cfg.rpn_forward_time - cfg.rpn_forward_conv_time)
-                print('  #RPN rois process cost: ', cfg.rpn_rois_process)
-                print(' *Forward rcnn cost: ', cfg.rcnn_time)
-                print('Backward data cost: ', backward_time)
 
             if (step+1) % int(iters_per_epoch/2) == 0:
                 if args.mGPUs:

@@ -610,7 +610,6 @@ class resnet_add_filter(_fasterRCNN):
     # Override train so that the training mode is set as we want
     nn.Module.train(self, mode)
     if mode:
-      print('traing in process')
       # Set fixed blocks to be in eval mode
       self.RCNN_base.eval()
       self.RCNN_base[5].train()

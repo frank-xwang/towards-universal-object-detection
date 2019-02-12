@@ -356,12 +356,7 @@ if __name__ == '__main__':
   cls_ind = cfg.datasets_list.index(args.dataset)
   cfg.cls_ind = cls_ind
   cfg.random_resize = False
-  cfg.rcnn_time = 0
-  cfg.rpn_time = 0
-  cfg.backbone_time = 0
-  cfg.rpn_forward_time = 0
   cfg.rpn_rois_process = 0
-  cfg.rpn_forward_conv_time = 0
   #####################################################
   args.cfg_file = "cfgs/{}_ls.yml".format(args.net) if args.large_scale else "cfgs/{}.yml".format(args.net)
   if args.cfg_file is not None:

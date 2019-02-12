@@ -34,7 +34,7 @@ class _fasterRCNN(nn.Module):
         print 'INFO: pooling size is: ', cfg.POOLING_SIZE_H, cfg.POOLING_SIZE_W
         self.RCNN_roi_pool = _RoIPooling(cfg.POOLING_SIZE_H, cfg.POOLING_SIZE_W, 1.0/16.0)
         self.RCNN_roi_align = RoIAlignAvg(cfg.POOLING_SIZE_H, cfg.POOLING_SIZE_W, 1.0/16.0)
-        ## wrote by Xudong Wang
+
         self.grid_size_H = cfg.POOLING_SIZE_H * 2 if cfg.CROP_RESIZE_WITH_MAX_POOL else cfg.POOLING_SIZE_H
         self.grid_size_W = cfg.POOLING_SIZE_W * 2 if cfg.CROP_RESIZE_WITH_MAX_POOL else cfg.POOLING_SIZE_W
         ## end
@@ -43,7 +43,6 @@ class _fasterRCNN(nn.Module):
         self.RCNN_roi_crop = _RoICrop()
 
     def forward(self, im_data, im_info, gt_boxes, num_boxes, cls_ind):
-        #print('faster rcnn is forwarding: ', cfg.cls_ind)
         cfg.nums += 1
         batch_size = im_data.size(0)
 
@@ -53,39 +52,12 @@ class _fasterRCNN(nn.Module):
         # feed image data to base model to obtain base feature map
         cfg.n = 0
         x = im_data
-        # print('Final size: ', x.shape, cls_ind)
-        backbone_start = time.time()
         x = self.RCNN_base(x)
-        # for layer in self.RCNN_base:
-        #     #print(layer)
-        #     x = layer(x)
-        #     #print(x.shape)
-        #     # if cfg.nums == 1:
-        #     #     if isinstance(layer, nn.Conv2d):
-        #     #         print('layer.weight',layer.weight)
-        #     #     elif isinstance(layer, nn.ReLU):
-        #     #         print('ReLU')
-        #     #     elif isinstance(layer, nn.MaxPool2d):
-        #     #         print('MaxPool2d')
-        #     #     else:
-        #     #         print('ModuleList')
-        #     #     print('INFO', cfg.n, x)
-        #     # cfg.n +=1
-        # #print('finished')
-        backbone_end = time.time()
-        cfg.backbone_time += backbone_end - backbone_start
         base_feat = x
-        #base_feat = self.RCNN_base(im_data)
-        # if cfg.nums == 1:
-        #     print('im_data',im_data)
-        #     print('base_feat',base_feat)
         
         # feed base feature map tp RPN to obtain rois
         rois, rpn_loss_cls, rpn_loss_bbox = self.RCNN_rpn(base_feat, im_info, gt_boxes, num_boxes, cfg.cls_ind)
         
-        rpn_time = time.time()
-        cfg.rpn_time += rpn_time - backbone_end
-
         # if it is training phrase, then use ground trubut bboxes for refining
         if self.training:
             roi_data = self.RCNN_proposal_target(rois, gt_boxes, num_boxes)
@@ -118,9 +90,6 @@ class _fasterRCNN(nn.Module):
             pooled_feat = self.RCNN_roi_pool(base_feat, rois.view(-1,5))
         # feed pooled features to top model
         pooled_feat = self._head_to_tail(pooled_feat)
-        # if cfg.nums == 1:
-        #     print(pooled_feat)
-        # compute bbox offset
         bbox_pred = self.RCNN_bbox_pred_layers[cfg.cls_ind](pooled_feat)
         if self.training and not self.class_agnostic:
             # select the corresponding columns according to roi labels
@@ -137,15 +106,17 @@ class _fasterRCNN(nn.Module):
         if self.training:
             # classification loss
             RCNN_loss_cls = F.cross_entropy(cls_score, rois_label)
-
             # bounding box regression L1 loss
             RCNN_loss_bbox = _smooth_l1_loss(bbox_pred, rois_target, rois_inside_ws, rois_outside_ws)
 
         cls_prob = cls_prob.view(batch_size, rois.size(1), -1)
         bbox_pred = bbox_pred.view(batch_size, rois.size(1), -1)
 
-        rcnn_predict_time = time.time()
-        cfg.rcnn_time += rcnn_predict_time - rpn_time
+        if self.training:
+            rpn_loss_cls = torch.unsqueeze(rpn_loss_cls, 0)
+            rpn_loss_bbox = torch.unsqueeze(rpn_loss_bbox, 0)
+            RCNN_loss_cls = torch.unsqueeze(RCNN_loss_cls, 0)
+            RCNN_loss_bbox = torch.unsqueeze(RCNN_loss_bbox, 0)
 
         return rois, cls_prob, bbox_pred, rpn_loss_cls, rpn_loss_bbox, RCNN_loss_cls, RCNN_loss_bbox, rois_label
 

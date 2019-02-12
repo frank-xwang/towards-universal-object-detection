@@ -1,15 +1,13 @@
-BATCH_SIZE=24
+rm /home/Xwang/HeadNode-1/universal_model/lib/model/faster_rcnn/faster_rcnn_uni.pyc
+rm /home/Xwang/HeadNode-1/universal_model/lib/model/faster_rcnn/dataset_attention_module.pyc
+rm /home/Xwang/HeadNode-1/universal_model/lib/model/faster_rcnn/SEResNet_Data_Attention.pyc
+rm /home/Xwang/HeadNode-1/universal_model/lib/model/rpn/rpn_universal.pyc
+BATCH_SIZE=4
 net=data_att_res50
-# net=data_att_res50
 WORKER_NUMBER=1
 LEARNING_RATE=0.01
 DECAY_STEP=10
-GPU_ID=9,6,7,8
 GPU_ID=0,1,2,3
-# GPU_ID=6,7
-# GPU_ID=0,1,2,3,7
-# GPU_ID=4
-GPU_ID=0,1,2,3,4,5,6,7
 checkepoch=1
 SAVE_SESSION=1
 checksession=1
@@ -20,19 +18,12 @@ backward_together=0 # 0: independent; 1: together
 USE_FLIPPED=0 # choose 1 for using flipped images, 0 for don't
 
 datasets=universal
-
-DATA_DIR=/gpu7_ssd/xuw080/univ_data/
-DATA_DIR=/gpu2_data/xuw080/data/
-DATA_DIR=/gpu3_data/xuw080/data/
-DATA_DIR=/data4/xuw080/universal_model/data/
-DATA_DIR=/gpu7_ssd/xuw080/univ_data/
-DATA_DIR=/gpu6_ssd/xuw080/univ_data/
-DATA_DIR=/gpu5_ssd/xuw080/data/
-DATA_DIR=/mnt/local_mnt/sda/xudong/univ_data
+DATA_DIR=/home/Xwang/HeadNode-1/universal_model_/data
 
 random_resize=True
 fix_bn=True
 use_bn_mux=False
+domain_pred=True
 
 CUDA_VISIBLE_DEVICES=${GPU_ID} python universal_model.py \
                     --dataset ${datasets} --net ${net} \
@@ -46,6 +37,7 @@ CUDA_VISIBLE_DEVICES=${GPU_ID} python universal_model.py \
                     --random_resize ${random_resize} \
                     --fix_bn ${fix_bn} \
                     --use_mux ${use_bn_mux} \
+                    --domain_pred ${domain_pred} \
                     --backward_together ${backward_together}
                     --r ${resume} \
                     --checksession ${checksession} \

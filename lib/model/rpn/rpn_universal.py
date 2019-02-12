@@ -106,7 +106,6 @@ class _RPN(nn.Module):
 
     def forward(self, base_feat, im_info, gt_boxes, num_boxes, cls_ind):
         
-        rpn_forward_start = time.time()
         batch_size = base_feat.size(0)
 
         # return feature map after convrelu layer
@@ -124,15 +123,12 @@ class _RPN(nn.Module):
 
         # proposal layer
         cfg_key = 'TRAIN' if self.training else 'TEST'
-        cfg.rpn_forward_conv_time += time.time() - rpn_forward_start
 
         rois = self.RPN_proposal[cfg.cls_ind]((rpn_cls_prob.data, rpn_bbox_pred.data,
                                  im_info, cfg_key))
 
         self.rpn_loss_cls = 0
         self.rpn_loss_box = 0
-        rpn_forward_end = time.time()
-        cfg.rpn_forward_time += rpn_forward_end - rpn_forward_start
 
         # generating training labels and build the rpn loss
         if self.training:
@@ -162,6 +158,5 @@ class _RPN(nn.Module):
             self.rpn_loss_box = _smooth_l1_loss(rpn_bbox_pred, rpn_bbox_targets, rpn_bbox_inside_weights,
                                                             rpn_bbox_outside_weights, sigma=3, dim=[1,2,3])
 
-        cfg.rpn_rois_process += time.time() - rpn_forward_end
         
         return rois, self.rpn_loss_cls, self.rpn_loss_box
