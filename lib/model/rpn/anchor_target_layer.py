@@ -70,8 +70,6 @@ class _AnchorTargetLayer(nn.Module):
             num_boxes = input[3]
             fg_prob = input[4][:, self._num_anchors:, :, :].contiguous()
             has_people = False
-            #print('_num_anchors', self. _num_anchors)
-            #print('fg_prob size is: ', fg_prob.size())
             # map of shape (batch_size, num_anchors, H, W)
             # rpn_cls_score is the score of each each anchors in
             # each positions(there are num_anchors in each position)
@@ -358,7 +356,7 @@ class _AnchorTargetLayer(nn.Module):
             bbox_inside_weights[labels==1] = cfg.TRAIN.RPN_BBOX_INSIDE_WEIGHTS[0]
 
             if cfg.TRAIN.RPN_POSITIVE_WEIGHT < 0:
-                num_examples = torch.sum(labels[i] >= 0)
+                num_examples = torch.sum(labels[i] >= 0).item()
                 positive_weights = 1.0 / num_examples
                 negative_weights = 1.0 / num_examples
             else:

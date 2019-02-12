@@ -52,24 +52,7 @@ class _fasterRCNN(nn.Module):
         # feed image data to base model to obtain base feature map
         cfg.n = 0
         x = im_data
-        for layer in self.RCNN_base:
-            x = layer(x)
-            # if cfg.nums == 1:
-            #     if isinstance(layer, nn.ReLU):
-            #         print('ReLU')
-            #     elif isinstance(layer, nn.MaxPool2d):
-            #         print('MaxPool2d')
-            #     else:
-            #         print('layer.weight',layer.weight)
-            #     print('INFO', cfg.n, x)
-            # cfg.n +=1
-        base_feat = x
-        #base_feat = self.RCNN_base(im_data)
-        # if cfg.nums == 1:
-        #     print('im_data',im_data)
-        #     print('base_feat',base_feat)
-        
-        #print('base_feat size is: ', base_feat.size())
+        base_feat = self.RCNN_base(x)
 
         # feed base feature map tp RPN to obtain rois
         rois, rpn_loss_cls, rpn_loss_bbox = self.RCNN_rpn(base_feat, im_info, gt_boxes, num_boxes)
@@ -109,11 +92,8 @@ class _fasterRCNN(nn.Module):
 
         # feed pooled features to top model
         pooled_feat = self._head_to_tail(pooled_feat)
-        # if cfg.nums == 1:
-        #     print(pooled_feat)
 
         # compute bbox offset
-        #print('pooled_feat size is: ', pooled_feat.size())
         bbox_pred = self.RCNN_bbox_pred(pooled_feat)
         if self.training and not self.class_agnostic:
             # select the corresponding columns according to roi labels
