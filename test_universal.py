@@ -60,7 +60,7 @@ def parse_args():
                       help='set config keys', default=None,
                       nargs=argparse.REMAINDER)
   parser.add_argument('--load_dir', dest='load_dir',
-                      help='directory to load models', default="models",
+                      help='directory to load models', default="/home/Xwang/HeadNode-1/universal_model_/models",
                       type=str)
   parser.add_argument('--cuda', dest='cuda',
                       help='whether use CUDA',
@@ -110,6 +110,9 @@ def parse_args():
   parser.add_argument('--use_mux', dest='use_mux',
                       help='whether use BN MUX',
                       default="False", type=str)
+  parser.add_argument('--DATA_DIR', dest='DATA_DIR',
+                      help='path to DATA_DIR',
+                      default="/home/xuw080/data4/universal_model/data/", type=str)
   args = parser.parse_args()
   return args
 
@@ -379,6 +382,7 @@ if __name__ == '__main__':
   cfg.finetuneBN_DS = args.finetuneBN_DS == 1
   cfg.finetuneBN_linear = args.finetuneBN_linear == 1
   cfg.fa_conv_num = args.fa_conv_num
+  cfg.DATA_DIR = args.DATA_DIR
 
   cfg.fix_bn = args.fix_bn == "True"
   if cfg.fix_bn: print("INFO: Fix batch normalization layers")

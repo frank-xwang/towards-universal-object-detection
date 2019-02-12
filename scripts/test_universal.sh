@@ -3,7 +3,7 @@ net=data_att_res50
 WORKER_NUMBER=8
 LEARNING_RATE=0.001
 DECAY_STEP=5
-GPU_ID=1
+GPU_ID=2
 EPOCH=12
 SESSION=154
 CHECKPOINT=3813
@@ -35,6 +35,7 @@ fa_conv_num=0
 random_resize=False
 fix_bn=True
 use_bn_mux=False
+DATA_DIR=/home/Xwang/HeadNode-1/universal_model_/data
 
 CUDA_VISIBLE_DEVICES=${GPU_ID} python test_universal.py \
                     --dataset ${datasets} --net ${net} \
@@ -42,6 +43,7 @@ CUDA_VISIBLE_DEVICES=${GPU_ID} python test_universal.py \
                     --checkepoch ${EPOCH} \
                     --checkpoint ${CHECKPOINT} \
                     --cuda --mGPUs \
+                    --DATA_DIR ${DATA_DIR} \
                     --random_resize ${random_resize} \
                     --fix_bn ${fix_bn} \
                     --use_mux ${use_bn_mux} \

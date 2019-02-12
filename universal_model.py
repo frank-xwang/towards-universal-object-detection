@@ -77,7 +77,7 @@ def parse_args():
                         default=10000, type=int)                    
 
     parser.add_argument('--save_dir', dest='save_dir',
-                        help='directory to save models', default="models",
+                        help='directory to save models', default="/home/Xwang/HeadNode-1/universal_model_/models",
                         nargs=argparse.REMAINDER)
 
     parser.add_argument('--nw', dest='num_workers',
