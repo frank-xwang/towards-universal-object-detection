@@ -238,7 +238,7 @@ def load_pretrained(model, pretrained):
 
 class se_resnet(_fasterRCNN):
   def __init__(self, classes, num_layers=101, pretrained=False, class_agnostic=False, rpn_batchsize=None):
-    self.model_path = 'data/pretrained_model/se_resnet' + str(num_layers) + '.pth.tar'
+    self.model_path = '/home/Xwang/HeadNode-1/universal_model_/data/pretrained_model/se_resnet' + str(num_layers) + '.pth.tar'
     if num_layers == 18 or num_layers == 34:
       self.dout_base_model = 256
     else:

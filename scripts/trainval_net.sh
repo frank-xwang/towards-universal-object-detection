@@ -30,7 +30,7 @@ datasets=LISA
 
 fix_bn=True
 USE_FLIPPED=True
-DATA_DIR=data/
+DATA_DIR=/home/Xwang/HeadNode-1/universal_model_/data
 
 CUDA_VISIBLE_DEVICES=${GPU_ID} python trainval_net.py \
                     --dataset ${datasets} --net ${net} \
