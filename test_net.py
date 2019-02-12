@@ -61,7 +61,7 @@ def parse_args():
                       help='set config keys', default=None,
                       nargs=argparse.REMAINDER)
   parser.add_argument('--load_dir', dest='load_dir',
-                      help='directory to load models', default="models",
+                      help='directory to load models', default="/home/Xwang/HeadNode-1/universal_model_/models",
                       type=str)
   parser.add_argument('--cuda', dest='cuda',
                       help='whether use CUDA',
@@ -93,6 +93,9 @@ def parse_args():
   parser.add_argument('--vis', dest='vis',
                       help='visualization mode',
                       action='store_true')
+  parser.add_argument('--DATA_DIR', dest='DATA_DIR',
+                      help='path to DATA_DIR',
+                      default="/home/xuw080/data4/universal_model/data/", type=str)
   args = parser.parse_args()
   return args
 
@@ -196,7 +199,7 @@ if __name__ == '__main__':
       cfg.DEBUG = False # set as True if debug whether 'people' is ignored
       ## scales*11 is the new_width, new_width*ratio is new height
       # 30, 42, 60, 84, 120, 168, 240 width
-      args.set_cfgs = ['ANCHOR_SCALES', '[0.75, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24, 30]', 'ANCHOR_RATIOS', '[1]', 'MAX_NUM_GT_BOXES', '300']
+      args.set_cfgs = ['ANCHOR_SCALES', '[0.75, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24, 30]', 'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '300']
 
   elif args.dataset == "citypersons":
       args.imdb_name = "citypersons_val"
@@ -334,6 +337,7 @@ if __name__ == '__main__':
   cfg.nums = 0
   cfg.bnn = 0
   cfg.random_resize = False
+  cfg.DATA_DIR = args.DATA_DIR
   
   print('Using config:')
   pprint.pprint(cfg)
@@ -413,10 +417,11 @@ if __name__ == '__main__':
     gt_boxes = gt_boxes.cuda()
 
   # make variable
-  im_data = Variable(im_data, volatile=True)
-  im_info = Variable(im_info, volatile=True)
-  num_boxes = Variable(num_boxes, volatile=True)
-  gt_boxes = Variable(gt_boxes, volatile=True)
+  with torch.no_grad():
+    im_data = Variable(im_data)
+    im_info = Variable(im_info)
+    num_boxes = Variable(num_boxes)
+    gt_boxes = Variable(gt_boxes)
 
   if args.cuda:
     cfg.CUDA = True

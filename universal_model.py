@@ -205,9 +205,8 @@ if __name__ == '__main__':
     cfg.sample_mode, cfg.VGG_ORIGIN, cfg.USE_ALL_GT, cfg.ignore_people, cfg.filter_empty, cfg.DEBUG, args.set_cfgs \
     = get_datasets_info('pascal_voc_0712')
 
-    cfg.datasets_list                 = ['KITTIVOC','widerface','pascal_voc_0712','LISA','dota','Kitchen','caltech','coco','cross_domain'] # 'clipart', 'Kitchen']#
-    # cfg.datasets_list                 = ['KITTIVOC','pascal_voc_0712','Kitchen','widerface','dota','caltech','coco', 'LISA'] # 'clipart', 'Kitchen']#
-    cfg.datasets_list                 = ['KITTIVOC','widerface','pascal_voc'] # 'clipart', 'Kitchen']#
+    cfg.datasets_list                 = ['KITTIVOC','widerface','pascal_voc_0712','Kitchen','LISA']
+    # cfg.datasets_list                 = ['LISA','pascal_voc_0712','Kitchen','coco','clipart','watercolor','comic','widerface','dota','deeplesion','KITTIVOC']
     cfg.imdb_name_list                = univ_info(cfg.datasets_list, 'imdb_name')
     cfg.imdbval_name_list             = univ_info(cfg.datasets_list, 'imdbval_name')
     cfg.train_scales_list             = univ_info(cfg.datasets_list, 'SCALES')

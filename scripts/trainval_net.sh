@@ -1,11 +1,11 @@
-BATCH_SIZE=12
+BATCH_SIZE=16
 net=se_res50
 WORKER_NUMBER=1
 LEARNING_RATE=0.01
 DECAY_STEP=10
-GPU_ID=2,3,4,5,6,7
+GPU_ID=0,1,2,3,4,5,6,7
 checkepoch=1
-SESSION=125
+SESSION=127
 CHECKPOINT=2
 
 #number of epochs to train
@@ -25,8 +25,8 @@ datasets=Kitchen
 datasets=coco
 datasets=pascal_voc
 datasets=KITTIVOC
-datasets=widerface
 datasets=LISA
+datasets=widerface
 
 fix_bn=True
 USE_FLIPPED=True

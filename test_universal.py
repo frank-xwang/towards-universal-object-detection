@@ -329,27 +329,30 @@ if __name__ == '__main__':
       args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]', 'ANCHOR_RATIOS', '[0.5, 1, 2]', 'MAX_NUM_GT_BOXES', '20']
       args.set_cfgs = ['ANCHOR_SCALES', '[0.75, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24, 30]', 'ANCHOR_RATIOS', '[0.5, 1, 2]', 'MAX_NUM_GT_BOXES', '30']
 
-  cfg.datasets_list = ['KITTIVOC','widerface','pascal_voc_0712', 'Kitchen', 'LISA']
-  cfg.ANCHOR_NUM = [36,12,36,36,36]
-  cfg.imdb_name_list                = univ_info(cfg.datasets_list, 'imdb_name')
-  cfg.imdbval_name_list             = univ_info(cfg.datasets_list, 'imdbval_name')
-  cfg.train_scales_list             = univ_info(cfg.datasets_list, 'SCALES')
-  cfg.train_rpn_batchsize_list      = univ_info(cfg.datasets_list, 'RPN_BATCHSIZE')
-  cfg.train_batchsize_list          = univ_info(cfg.datasets_list, 'BATCH_SIZE')
-  cfg.rpn_positive_overlap_list     = univ_info(cfg.datasets_list, 'RPN_POSITIVE_OVERLAP')
-  cfg.rpn_nms_thresh_list           = univ_info(cfg.datasets_list, 'RPN_NMS_THRESH')
-  cfg.train_fg_thresh_list          = univ_info(cfg.datasets_list, 'FG_THRESH')
-  cfg.MAX_NUM_GT_BOXES_LIST         = univ_info(cfg.datasets_list, 'MAX_NUM_GT_BOXES')
-  cfg.ANCHOR_SCALES_LIST            = univ_info(cfg.datasets_list, 'ANCHOR_SCALES')
-  cfg.ANCHOR_RATIOS_LIST            = univ_info(cfg.datasets_list, 'ANCHOR_RATIOS')
-  cfg.filp_image                    = univ_info(cfg.datasets_list, 'USE_FLIPPED')
-  cfg.num_classes                   = univ_info(cfg.datasets_list, 'num_classes') 
+  cfg.datasets_list = ['KITTIVOC','widerface','pascal_voc_0712','Kitchen','LISA']
+  # cfg.datasets_list = ['LISA','pascal_voc_0712','Kitchen','coco','clipart','watercolor','comic','widerface','dota','deeplesion','KITTIVOC']
+  cfg.imdb_name_list                = univ_info(cfg.datasets_list, 'imdb_name', test=True)
+  cfg.imdbval_name_list             = univ_info(cfg.datasets_list, 'imdbval_name', test=True)
+  cfg.train_scales_list             = univ_info(cfg.datasets_list, 'SCALES', test=True)
+  cfg.train_rpn_batchsize_list      = univ_info(cfg.datasets_list, 'RPN_BATCHSIZE', test=True)
+  cfg.train_batchsize_list          = univ_info(cfg.datasets_list, 'BATCH_SIZE', test=True)
+  cfg.rpn_positive_overlap_list     = univ_info(cfg.datasets_list, 'RPN_POSITIVE_OVERLAP', test=True)
+  cfg.rpn_nms_thresh_list           = univ_info(cfg.datasets_list, 'RPN_NMS_THRESH', test=True)
+  cfg.train_fg_thresh_list          = univ_info(cfg.datasets_list, 'FG_THRESH', test=True)
+  cfg.MAX_NUM_GT_BOXES_LIST         = univ_info(cfg.datasets_list, 'MAX_NUM_GT_BOXES', test=True)
+  cfg.ANCHOR_SCALES_LIST            = univ_info(cfg.datasets_list, 'ANCHOR_SCALES', test=True)
+  cfg.ANCHOR_RATIOS_LIST            = univ_info(cfg.datasets_list, 'ANCHOR_RATIOS', test=True)
+  cfg.filp_image                    = univ_info(cfg.datasets_list, 'USE_FLIPPED', test=True)
+  cfg.num_classes                   = univ_info(cfg.datasets_list, 'num_classes', test=True)
   cfg.add_filter_ratio = 0
   cfg.add_filter_num = 0
+  cfg.ANCHOR_NUM = np.arange(len(cfg.num_classes))
+  for i in range(len(cfg.num_classes)):
+      cfg.ANCHOR_NUM[i] = len(cfg.ANCHOR_SCALES_LIST[i])*len(cfg.ANCHOR_RATIOS_LIST[i])
+      
   #####################################################
   # NEED TO BE CHANGED IF USE NEW DATASETS FOR TRAINING
   # MUST MATCH TRAINING ODER
-  
   cls_ind = cfg.datasets_list.index(args.dataset)
   cfg.cls_ind = cls_ind
   cfg.random_resize = False
@@ -454,10 +457,11 @@ if __name__ == '__main__':
     gt_boxes = gt_boxes.cuda()
 
   # make variable
-  im_data = Variable(im_data, volatile=True)
-  im_info = Variable(im_info, volatile=True)
-  num_boxes = Variable(num_boxes, volatile=True)
-  gt_boxes = Variable(gt_boxes, volatile=True)
+  with torch.no_grad():
+    im_data = Variable(im_data)
+    im_info = Variable(im_info)
+    num_boxes = Variable(num_boxes)
+    gt_boxes = Variable(gt_boxes)
 
   if args.cuda:
     cfg.CUDA = True

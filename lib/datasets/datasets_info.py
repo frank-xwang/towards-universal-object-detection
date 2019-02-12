@@ -10,7 +10,7 @@ def get_datasets_info(dataset, use_dict = False, test=False):
     if dataset == "pascal_voc":
         datasets_info['imdb_name'] = "voc_2007_trainval"
         datasets_info['imdbval_name'] = "voc_2007_test"
-        datasets_info['set_cfgs'] = ['ANCHOR_SCALES', '[2.72, 3.81, 5.45, 7.64, 10.9, 15.27, 21.8, 32]', 'ANCHOR_RATIOS', '[2]', 'MAX_NUM_GT_BOXES', '20']
+        datasets_info['set_cfgs'] = ['ANCHOR_SCALES', '[8, 16, 32]', 'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
         datasets_info['MAX_NUM_GT_BOXES'] = 20
         datasets_info['RPN_BATCHSIZE'] = 256
         datasets_info['BATCH_SIZE'] = 256
@@ -56,7 +56,7 @@ def get_datasets_info(dataset, use_dict = False, test=False):
         datasets_info['ANCHOR_RATIOS'] = [0.5, 1, 2]
         datasets_info['num_classes'] = 81
         datasets_info['dataset'] = dataset
-        datasets_info['USE_FLIPPED'] = False
+        datasets_info['USE_FLIPPED'] = True
         datasets_info['RPN_POSITIVE_OVERLAP'] = 0.5
         datasets_info['RPN_NMS_THRESH'] = 0.7
         datasets_info['FG_THRESH'] = 0.5
@@ -79,10 +79,13 @@ def get_datasets_info(dataset, use_dict = False, test=False):
         datasets_info['BATCH_SIZE'] = 32
         datasets_info['dataset'] = dataset
         datasets_info['RPN_POSITIVE_OVERLAP'] = 0.5
-        datasets_info['RPN_NMS_THRESH'] = 0.65
         datasets_info['FG_THRESH'] = 0.45
         if test:
             datasets_info['imdb_name'] = "caltech_test"
+        if test:
+            datasets_info['RPN_NMS_THRESH'] = 0.65
+        else:
+            datasets_info['RPN_NMS_THRESH'] = 0.65
         datasets_info['SCALES'] =(720,)
         datasets_info['MAX_NUM_GT_BOXES'] = 20 
         datasets_info['ANCHOR_SCALES'] = [0.75, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24, 30]
@@ -162,6 +165,10 @@ def get_datasets_info(dataset, use_dict = False, test=False):
         datasets_info['BATCH_SIZE'] = 256
         datasets_info['RPN_POSITIVE_OVERLAP'] = 0.5
         datasets_info['RPN_NMS_THRESH'] = 0.65
+        if test:
+            datasets_info['RPN_NMS_THRESH'] = 0.65
+        else:
+            datasets_info['RPN_NMS_THRESH'] = 0.65
         datasets_info['FG_THRESH'] = 0.45
         datasets_info['sample_mode'] = 'random'
         datasets_info['VGG_ORIGIN'] = True
@@ -230,7 +237,10 @@ def get_datasets_info(dataset, use_dict = False, test=False):
         datasets_info['RPN_BATCHSIZE'] = 128
         datasets_info['BATCH_SIZE'] = 128
         datasets_info['RPN_POSITIVE_OVERLAP'] = 0.5
-        datasets_info['RPN_NMS_THRESH'] = 0.7
+        if test:
+            datasets_info['RPN_NMS_THRESH'] = 0.65
+        else:
+            datasets_info['RPN_NMS_THRESH'] = 0.65
         datasets_info['FG_THRESH'] = 0.5
         datasets_info['sample_mode'] = 'random'
         datasets_info['VGG_ORIGIN'] = True
@@ -252,7 +262,7 @@ def get_datasets_info(dataset, use_dict = False, test=False):
         datasets_info['MAX_NUM_GT_BOXES'] = 30
         datasets_info['RPN_BATCHSIZE'] = 256
         datasets_info['BATCH_SIZE'] = 256
-        datasets_info['RPN_POSITIVE_OVERLAP'] = 0.5
+        datasets_info['RPN_POSITIVE_OVERLAP'] = 0.7
         datasets_info['RPN_NMS_THRESH'] = 0.7
         datasets_info['FG_THRESH'] = 0.5
         datasets_info['sample_mode'] = 'random'
@@ -273,8 +283,8 @@ def get_datasets_info(dataset, use_dict = False, test=False):
         datasets_info['imdb_name'] = "deeplesion_trainval"
         datasets_info['SCALES'] = (512,) # origin is 1024
         datasets_info['MAX_NUM_GT_BOXES'] = 30
-        datasets_info['RPN_BATCHSIZE'] = 64
-        datasets_info['BATCH_SIZE'] = 32
+        datasets_info['RPN_BATCHSIZE'] = 128
+        datasets_info['BATCH_SIZE'] = 64
         datasets_info['RPN_POSITIVE_OVERLAP'] = 0.5
         datasets_info['RPN_NMS_THRESH'] = 0.7
         datasets_info['FG_THRESH'] = 0.5
@@ -286,7 +296,7 @@ def get_datasets_info(dataset, use_dict = False, test=False):
         datasets_info['ANCHOR_SCALES'] = [0.75, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24, 30]
         datasets_info['ANCHOR_RATIOS'] = [0.5, 1, 2]
         datasets_info['num_classes'] = 2
-        datasets_info['USE_FLIPPED'] = True
+        datasets_info['USE_FLIPPED'] = False
 
     elif dataset == "LISA":
         datasets_info['imdbval_name'] = "LISA_test"
