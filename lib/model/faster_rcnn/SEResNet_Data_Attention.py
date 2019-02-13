@@ -37,6 +37,7 @@ class SEBasicBlock(nn.Module):
   def __init__(self, inplanes, planes, stride=1, downsample=None, se_loss=False, fixed_block=False):
     super(SEBasicBlock, self).__init__()
     self.se_loss = se_loss
+    self.fixed_block = fixed_block
     self.conv1 = conv3x3(inplanes, planes, stride)
     if cfg.use_mux: self.bn1 = nn.ModuleList([nn.BatchNorm2d(planes) for datasets in cfg.num_classes])
     else: self.bn1 = nn.BatchNorm2d(planes)
@@ -61,7 +62,7 @@ class SEBasicBlock(nn.Module):
     if cfg.use_mux: out = self.bn2[cfg.cls_ind](out)
     else: out = self.bn2(out)
 
-    if cfg.domain_pred:
+    if cfg.domain_pred and not self.fixed_block:
       out, domain_pred = self.datasets_attention(out)
     else:
       out = self.datasets_attention(out)
@@ -71,7 +72,7 @@ class SEBasicBlock(nn.Module):
 
     out += residual
     out = self.relu(out)
-    if cfg.domain_pred:
+    if cfg.domain_pred and not self.fixed_block:
       return out, domain_pred
     return out
 
@@ -81,6 +82,7 @@ class SEBottleneck(nn.Module):
   def __init__(self, inplanes, planes, stride=1, downsample=None, se_loss=False, fixed_block=False):
     super(SEBottleneck, self).__init__()
     self.se_loss = se_loss
+    self.fixed_block = fixed_block
     self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=1, bias=False)
     if cfg.use_mux: self.bn1 = nn.ModuleList([nn.BatchNorm2d(planes) for datasets in cfg.num_classes])
     else: self.bn1 = nn.BatchNorm2d(planes)
@@ -114,7 +116,7 @@ class SEBottleneck(nn.Module):
     if cfg.use_mux: out = self.bn3[cfg.cls_ind](out)
     else: out = self.bn3(out)
 
-    if cfg.domain_pred:
+    if cfg.domain_pred and not self.fixed_block:
       out, domain_pred = self.datasets_attention(out)
     else:
       out = self.datasets_attention(out)
@@ -124,8 +126,12 @@ class SEBottleneck(nn.Module):
 
     out += residual
     out = self.relu(out)
-    if cfg.domain_pred:
-      return out, domain_pred
+    if cfg.domain_pred and not self.fixed_block:
+      if cfg.domain_preds is None:
+        cfg.domain_preds = domain_pred.cpu()
+      else:
+        domain_pred = domain_pred.view(cfg.domain_preds.size(0), -1, domain_pred.size(1), domain_pred.size(2))
+        cfg.domain_preds += torch.mean(domain_pred,1).cpu()
     return out
 
 class BnMux(nn.Module):
@@ -193,6 +199,7 @@ class DataAttentionResNet(nn.Module):
     return nn.Sequential(*layers)
 
   def forward(self, x):
+
     x = self.conv1(x)
     x = self.bn1(x)
     x = self.relu(x)
@@ -201,18 +208,12 @@ class DataAttentionResNet(nn.Module):
     x = self.layer1(x)
     x = self.layer2(x)
 
-    if self.se_loss:
-      x, domain_pred = self.layer3(x)
-      x, domain_pred = self.layer4(x)
-    else:
-      x = self.layer3(x)
-      x = self.layer4(x) 
+    x = self.layer3(x)
+    x = self.layer4(x) 
 
     x = self.avgpool(x)
     x = x.view(x.size(0), -1)
     x = self.fc(x)
-    if cfg.domain_pred:
-      return x, domain_pred
     return x
 
 def data_att_resnet18(pretrained=False, se_loss=False):
@@ -428,5 +429,13 @@ class Datasets_Attention(_fasterRCNN):
         self.RCNN_top.apply(set_bn_eval)
 
   def _head_to_tail(self, pool5):
+    # if isinstance(self.RCNN_top, nn.Sequential) and cfg.domain_pred:
+    #   for neck in self.RCNN_top:
+    #     print("before neck: ", len(pool5))
+    #     pool5, domain_pred = neck(pool5)
+    #     print("after neck: ", len(pool5))
+    #   return pool5.mean(3).mean(2), domain_pred
+    # else:
+    #   fc7 = self.RCNN_top(pool5).mean(3).mean(2)
     fc7 = self.RCNN_top(pool5).mean(3).mean(2)
     return fc7

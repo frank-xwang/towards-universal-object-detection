@@ -159,14 +159,13 @@ def get_datasets_info(dataset, use_dict = False, test=False):
         datasets_info['POOLING_SIZE_W'] = 7
         datasets_info['dataset'] = dataset
         datasets_info['imdb_name'] = "widerface_train"
-        datasets_info['SCALES'] = (800,)
+        datasets_info['SCALES'] = (600,)
         datasets_info['MAX_NUM_GT_BOXES'] = 300
         datasets_info['RPN_BATCHSIZE'] = 256
         datasets_info['BATCH_SIZE'] = 256
         datasets_info['RPN_POSITIVE_OVERLAP'] = 0.5
-        datasets_info['RPN_NMS_THRESH'] = 0.65
         if test:
-            datasets_info['RPN_NMS_THRESH'] = 0.65
+            datasets_info['RPN_NMS_THRESH'] = 0.7
         else:
             datasets_info['RPN_NMS_THRESH'] = 0.65
         datasets_info['FG_THRESH'] = 0.45

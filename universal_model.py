@@ -36,6 +36,7 @@ from model.faster_rcnn.vgg_16_bn_univ import VGG16_bn
 from datasets.datasets_info import get_datasets_info
 from model.faster_rcnn.SEResNet_Data_Attention import Datasets_Attention
 from datasets.datasets_info import univ_info
+import torch.nn.functional as F
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -153,6 +154,9 @@ def parse_args():
     parser.add_argument('--domain_pred', dest='domain_pred',
                         help='whether add domain prediction loss for domain attention module',
                         default="False", type=str)
+    parser.add_argument('--domain_pred_weight', dest='domain_pred_weight',
+                        help='weight of domain prediction loss',
+                        default=1.0, type=float)
     args = parser.parse_args()
     return args                           
 
@@ -162,6 +166,17 @@ def check_grad(model):
         if param.requires_grad:
             if 'RCNN_cls_score_layers' in name and 'weight' in name:
                 print(name, torch.sum(param.grad.data)*1000, torch.sum(param)*1000)
+
+def process_se_loss(datasets_id, domain_pred, se_loss_weight):
+    avg_factor = domain_pred.size(0)
+    pred = domain_pred*1/torch.sum(domain_pred)*avg_factor
+    label = torch.ones(avg_factor, dtype=torch.long)
+    label.fill_(datasets_id)
+    # print("pred: ", pred, datasets_id)
+    loss = F.cross_entropy(pred.cuda(), label.view(avg_factor, 1).cuda())
+    # print('reduced loss: ',torch.sum(loss),torch.sum(loss)/avg_factor)
+    losses = torch.sum(loss)/avg_factor*se_loss_weight
+    return losses
 
 class sampler(Sampler):
     def __init__(self, train_size, batch_size):
@@ -208,7 +223,7 @@ if __name__ == '__main__':
     cfg.sample_mode, cfg.VGG_ORIGIN, cfg.USE_ALL_GT, cfg.ignore_people, cfg.filter_empty, cfg.DEBUG, args.set_cfgs \
     = get_datasets_info('pascal_voc_0712')
 
-    cfg.datasets_list                 = ['KITTIVOC','widerface']#,'pascal_voc_0712','Kitchen','LISA']
+    cfg.datasets_list                 = ['KITTIVOC','widerface','pascal_voc_0712','Kitchen','LISA']
     # cfg.datasets_list                 = ['LISA','pascal_voc_0712','Kitchen','coco','clipart','watercolor','comic','widerface','dota','deeplesion','KITTIVOC']
     cfg.imdb_name_list                = univ_info(cfg.datasets_list, 'imdb_name')
     cfg.imdbval_name_list             = univ_info(cfg.datasets_list, 'imdbval_name')
@@ -277,6 +292,7 @@ if __name__ == '__main__':
     if torch.cuda.is_available() and not args.cuda:
         print("WARNING: You have a CUDA device, so you should probably run with --cuda")
     print("INFO: Domain Prediction is: ", cfg.domain_pred)
+    cfg.domain_preds = None
 
     # train set
     # -- Note: Use validation set and disable the flipped to enable faster loading.
@@ -516,6 +532,10 @@ if __name__ == '__main__':
 
                 loss = rpn_loss_cls.mean() + rpn_loss_box.mean() \
                     + RCNN_loss_cls.mean() + RCNN_loss_bbox.mean()
+                if cfg.domain_pred:
+                    domain_pred_loss = process_se_loss(cls_ind,cfg.domain_preds,args.domain_pred_weight)
+                    loss += domain_pred_loss.mean()
+                    cfg.domain_preds = None
                 loss_temp[cls_ind] += loss.data.item()
 
                 # backward after training all datasets
@@ -530,8 +550,7 @@ if __name__ == '__main__':
                             update_chosen_se_layer(fasterRCNN, cls_ind)
                         optimizer.step()
                     #check_grad(fasterRCNN)
-                # backward after training ONE datasets
-
+                    # backward after training ONE datasets
                 else:
                     optimizer.zero_grad()
                     loss.backward()
@@ -553,6 +572,7 @@ if __name__ == '__main__':
                         loss_rpn_box = rpn_loss_box.mean().data.item()
                         loss_rcnn_cls = RCNN_loss_cls.mean().data.item()
                         loss_rcnn_box = RCNN_loss_bbox.mean().data.item()
+                        if cfg.domain_pred: domain_pred_loss = domain_pred_loss.mean().data.item()
                         fg_cnt = torch.sum(rois_label.data.ne(0))
                         bg_cnt = rois_label.data.numel() - fg_cnt
                     else:
@@ -560,6 +580,7 @@ if __name__ == '__main__':
                         loss_rpn_box = rpn_loss_box.data.item()
                         loss_rcnn_cls = RCNN_loss_cls.data.item()
                         loss_rcnn_box = RCNN_loss_bbox.data.item()
+                        if cfg.domain_pred: domain_pred_loss = domain_pred_loss.mean().data.item()
                         fg_cnt = torch.sum(rois_label.data.ne(0))
                         bg_cnt = rois_label.data.numel() - fg_cnt
                     if cfg.epoch_diff:
@@ -567,7 +588,11 @@ if __name__ == '__main__':
                     print("[session %d][epoch %2d][iter %4d/%4d][datasets %d] loss: %.4f, lr: %.2e" \
                                             % (args.session, epoch, step, iters_per_epoch, cls_ind, loss_temp[cls_ind], lr))
                     print("\t\t\tfg/bg=(%d/%d), time cost: %f" % (fg_cnt, bg_cnt, end-start))
-                    print("\t\t\trpn_cls: %.4f, rpn_box: %.4f, rcnn_cls: %.4f, rcnn_box %.4f" \
+                    if cfg.domain_pred:
+                        print("\t\t\trpn_cls: %.4f, rpn_box: %.4f, rcnn_cls: %.4f, rcnn_box %.4f, domain_pred %.4f" \
+                                        % (loss_rpn_cls, loss_rpn_box, loss_rcnn_cls, loss_rcnn_box, domain_pred_loss))
+                    else:
+                        print("\t\t\trpn_cls: %.4f, rpn_box: %.4f, rcnn_cls: %.4f, rcnn_box %.4f" \
                                     % (loss_rpn_cls, loss_rpn_box, loss_rcnn_cls, loss_rcnn_box))
                     if args.use_tfboard:
                         info = {
