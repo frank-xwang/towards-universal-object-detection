@@ -327,7 +327,6 @@ class seresnet(_fasterRCNN):
             if current in resnet.state_dict():
               new_state_dict[current] = resnet.state_dict()[current]
       resnet.load_state_dict(new_state_dict)
-    # Build resnet.
     # RCNN_base[0]: resnet.conv1, RCNN_base[1]: resnet.bn1 ......
     self.RCNN_base = nn.Sequential(resnet.conv1, resnet.bn1,resnet.relu,
       resnet.maxpool,resnet.layer1,resnet.layer2,resnet.layer3)
