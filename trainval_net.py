@@ -125,6 +125,9 @@ def parse_args():
   parser.add_argument('--DATA_DIR', dest='DATA_DIR',
                       help='path to DATA_DIR',
                       default="/home/xuw080/data4/universal_model/data/", type=str)
+  parser.add_argument('--warmup_steps', dest='warmup_steps',
+                      help='Whether use warm up',
+                      default=0, type=int)
   args = parser.parse_args()
   return args
 
@@ -178,7 +181,6 @@ if __name__ == '__main__':
 
   print('Called with args:')
   print(args)
-  cfg.VGG_ORIGIN = True
   cfg.sample_mode = 'random'
   cfg.DEBUG = False # set as True if debug whether 'people' is ignored
   cfg.filter_empty = True
@@ -205,7 +207,7 @@ if __name__ == '__main__':
       cfg.POOLING_SIZE_W = 7
       #args.set_cfgs = ['ANCHOR_SCALES', '[2.72, 3.81, 5.45, 7.64, 10.9, 15.27, 21.8, 32]', 'ANCHOR_RATIOS', '[2]', 'MAX_NUM_GT_BOXES', '20']
       args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]', 'ANCHOR_RATIOS', '[0.5, 1, 2]', 'MAX_NUM_GT_BOXES', '20']
-      args.set_cfgs = ['ANCHOR_SCALES', '[0.75, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24, 30]', 'ANCHOR_RATIOS', '[0.5, 1, 2]', 'MAX_NUM_GT_BOXES', '20']
+      # args.set_cfgs = ['ANCHOR_SCALES', '[0.75, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24, 30]', 'ANCHOR_RATIOS', '[0.5, 1, 2]', 'MAX_NUM_GT_BOXES', '20']
       #args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]', 'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
       
   elif args.dataset == "pascal_voc_0712":
@@ -218,23 +220,23 @@ if __name__ == '__main__':
       cfg.POOLING_SIZE_H = 7
       cfg.POOLING_SIZE_W = 7
       args.set_cfgs = ['ANCHOR_SCALES', '[4, 8, 16, 32]', 'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
-      args.set_cfgs = ['ANCHOR_SCALES', '[0.75, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24, 30]', 'ANCHOR_RATIOS', '[0.5, 1, 2]', 'MAX_NUM_GT_BOXES', '30']
+      # args.set_cfgs = ['ANCHOR_SCALES', '[0.75, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24, 30]', 'ANCHOR_RATIOS', '[0.5, 1, 2]', 'MAX_NUM_GT_BOXES', '30']
 
   elif args.dataset == "Kitchen":
       args.imdb_name = "kitchen_train"
       args.imdbval_name = "kitchen_test"
       cfg.dataset = args.dataset
-      cfg.TRAIN.SCALES=(1024,)
+      cfg.TRAIN.SCALES=(800,)
       cfg.TRAIN.USE_FLIPPED = True
       cfg.imdb_name = args.imdb_name
       cfg.POOLING_SIZE_H = 7
       cfg.POOLING_SIZE_W = 7
-      args.set_cfgs = ['ANCHOR_SCALES', '[4, 8, 16, 32]', 'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
-      args.set_cfgs = ['ANCHOR_SCALES', '[0.75, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24, 30]', 'ANCHOR_RATIOS', '[0.5, 1, 2]', 'MAX_NUM_GT_BOXES', '30']
+      args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]', 'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+      # args.set_cfgs = ['ANCHOR_SCALES', '[0.75, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24, 30]', 'ANCHOR_RATIOS', '[0.5, 1, 2]', 'MAX_NUM_GT_BOXES', '30']
 
   elif args.dataset == "coco":
       args.imdb_name = "coco_2014_train+coco_2014_valminusminival"
-      # args.imdb_name = "coco_2014_valminusminival"
+      args.imdb_name = "coco_2014_valminusminival"
       cfg.dataset = args.dataset
       cfg.imdb_name = args.imdb_name
       cfg.TRAIN.USE_FLIPPED = True
@@ -269,7 +271,6 @@ if __name__ == '__main__':
       cfg.TRAIN.FG_THRESH = 0.45
       cfg.TRAIN.SCALES=(720,)
       cfg.sample_mode = 'bootstrap' # use bootstrap or ramdom as sampling method
-      cfg.VGG_ORIGIN = False # whether use vgg original classification layers
       cfg.TRAIN.USE_ALL_GT = True # choose true if want to exclude all proposals overlap with 'people' larger than 0.3
       cfg.ignore_people = False # ignore people, all proposals overlap with 'people' larger than 0.3 will be igonored
       cfg.use_coco_igonore = True
@@ -313,7 +314,6 @@ if __name__ == '__main__':
       cfg.imdb_name = args.imdb_name
       cfg.TRAIN.SCALES=(800,)
       # cfg.sample_mode = 'bootstrap' # use bootstrap or ramdom as sampling method
-      cfg.VGG_ORIGIN = True # whether use vgg original classification layers
       cfg.TRAIN.USE_ALL_GT = True # choose true if want to exclude all proposals overlap with 'people' larger than 0.3
       cfg.filter_empty = False # whether filter 0 gt images
       cfg.DEBUG = False # set as True if debug whether 'people' is ignored
@@ -334,7 +334,6 @@ if __name__ == '__main__':
       cfg.imdb_name = args.imdb_name
       cfg.TRAIN.SCALES=(1024,) # up-sampling 2x is the best, we choose 1.6x this time. #  1331=1.6x
       cfg.sample_mode = 'bootstrap' # use bootstrap or ramdom as sampling method
-      cfg.VGG_ORIGIN = False # whether use vgg original classification layers
       cfg.TRAIN.USE_ALL_GT = True # choose true if want to exclude all proposals overlap with 'people' larger than 0.3
       cfg.filter_empty = False # whether filter 0 gt images
       args.optimizer =="adam"
@@ -384,8 +383,8 @@ if __name__ == '__main__':
       cfg.POOLING_SIZE_H = 7
       cfg.POOLING_SIZE_W = 7
       #args.set_cfgs = ['ANCHOR_SCALES', '[2.72, 3.81, 5.45, 7.64, 10.9, 15.27, 21.8, 32]', 'ANCHOR_RATIOS', '[2]', 'MAX_NUM_GT_BOXES', '20']
-      args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]', 'ANCHOR_RATIOS', '[0.5, 1, 2]', 'MAX_NUM_GT_BOXES', '20']
-      args.set_cfgs = ['ANCHOR_SCALES', '[0.75, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24, 30]', 'ANCHOR_RATIOS', '[0.5, 1, 2]', 'MAX_NUM_GT_BOXES', '30']
+      args.set_cfgs = ['ANCHOR_SCALES', '[4, 8, 16, 32]', 'ANCHOR_RATIOS', '[0.5, 1, 2]', 'MAX_NUM_GT_BOXES', '20']
+      # args.set_cfgs = ['ANCHOR_SCALES', '[0.75, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24, 30]', 'ANCHOR_RATIOS', '[0.5, 1, 2]', 'MAX_NUM_GT_BOXES', '30']
 
   elif args.dataset == "KAISTVOC":
       args.imdb_name = "kaist_train"
@@ -401,7 +400,6 @@ if __name__ == '__main__':
       cfg.TRAIN.FG_THRESH = 0.45
       cfg.TRAIN.SCALES=(800,)
       cfg.sample_mode = 'bootstrap' # use bootstrap or ramdom as sampling method
-      cfg.VGG_ORIGIN = False # whether use vgg original classification layers
       cfg.TRAIN.USE_ALL_GT = True # choose true if want to exclude all proposals overlap with 'people' larger than 0.3
       cfg.ignore_people = False # ignore people, all proposals overlap with 'people' larger than 0.3 will be igonored
       cfg.filter_empty = False # whether filter 0 gt images
@@ -454,7 +452,8 @@ if __name__ == '__main__':
     cfg.TRAIN.SCALES=(800,)
     ## scales*11 is the new_width, new_width*ratio is new height
     # 30, 42, 60, 84, 120, 168, 240, 355
-    args.set_cfgs = ['ANCHOR_SCALES', '[0.75, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24, 30]', 'ANCHOR_RATIOS', '[0.5, 1, 2]', 'MAX_NUM_GT_BOXES', '50']
+    args.set_cfgs = ['ANCHOR_SCALES', '[4, 8, 16, 32]', 'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+    # args.set_cfgs = ['ANCHOR_SCALES', '[0.75, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24, 30]', 'ANCHOR_RATIOS', '[0.5, 1, 2]', 'MAX_NUM_GT_BOXES', '50']
   ### CONFIG FILES
   args.cfg_file = "cfgs/{}_ls.yml".format(args.net) if args.large_scale else "cfgs/{}.yml".format(args.net)
 
@@ -609,13 +608,12 @@ if __name__ == '__main__':
     #   load_state_dict(fasterRCNN, checkpoint['model'])
     # else:
     fasterRCNN.load_state_dict(checkpoint['model'])
-    optimizer.load_state_dict(checkpoint['optimizer'])
+    # optimizer.load_state_dict(checkpoint['optimizer'])
     lr = optimizer.param_groups[0]['lr']
     # if (args.dataset == "clipart" or args.dataset == "comic" or args.dataset == "watercolor")\
     #   and not_resume:
     print('Resumed lr is: ', lr)
     if 'pooling_mode' in checkpoint.keys():
-      print('loading faster-rcnn based on: %s' %(checkpoint['pooling_mode']))
       cfg.POOLING_MODE = checkpoint['pooling_mode']
     print("loaded checkpoint %s" % (load_name))
   if cfg.sample_mode == 'bootstrap':
@@ -632,6 +630,7 @@ if __name__ == '__main__':
   adjust_learning_rate(optimizer, args.lr/lr)
   lr = args.lr
   print('Learning rate is: ', lr)
+  base_lr = lr
   for epoch in range(args.start_epoch, args.max_epochs + 1):
     # setting to train mode
     fasterRCNN.train()
@@ -644,6 +643,14 @@ if __name__ == '__main__':
 
     data_iter = iter(dataloader)
     for step in range(iters_per_epoch):
+      if epoch == 1 and step <= args.warmup_steps - 1:
+        lr_decay_gamma = base_lr * (step + 1) / (args.warmup_steps)
+        adjust_learning_rate(optimizer, lr_decay_gamma)
+        lr = base_lr * lr_decay_gamma
+      # elif epoch == 1 and step > args.warmup_steps - 1:
+      #   lr_decay_gamma = base_lr/lr
+      #   adjust_learning_rate(optimizer, lr_decay_gamma)
+      #   lr = lr * lr_decay_gamma
       cfg.new_iter = True
       data = next(data_iter)
       #print('original size is: ',im_data.data.shape)
@@ -719,7 +726,6 @@ if __name__ == '__main__':
           'epoch': epoch + 1,
           'model': fasterRCNN.module.state_dict(),
           'optimizer': optimizer.state_dict(),
-          'pooling_mode': cfg.POOLING_MODE,
           'class_agnostic': args.class_agnostic,
         }, save_name)
       else:
@@ -729,7 +735,6 @@ if __name__ == '__main__':
           'epoch': epoch + 1,
           'model': fasterRCNN.state_dict(),
           'optimizer': optimizer.state_dict(),
-          'pooling_mode': cfg.POOLING_MODE,
           'class_agnostic': args.class_agnostic,
         }, save_name)
       print('save model: {}'.format(save_name))

@@ -109,7 +109,6 @@ if __name__ == '__main__':
 
   print('Called with args:')
   print(args)
-  cfg.VGG_ORIGIN = True
   if torch.cuda.is_available() and not args.cuda:
     print("WARNING: You have a CUDA device, so you should probably run with --cuda")
 
@@ -153,7 +152,7 @@ if __name__ == '__main__':
       args.set_cfgs = ['ANCHOR_SCALES', '[4, 8, 16, 32]', 'ANCHOR_RATIOS', '[0.5,1,2]']
   elif args.dataset == "caltech":
       args.imdb_name = "caltech_test"
-      args.imdbval_name = "caltech_test"      
+      args.imdbval_name = "caltech_test"
       cfg.TRAIN.RPN_BATCHSIZE = 256
       cfg.TRAIN.BATCH_SIZE = 32
       cfg.RPN_POSITIVE_OVERLAP = 0.5
@@ -164,17 +163,15 @@ if __name__ == '__main__':
       cfg.POOLING_SIZE_W = 7
       cfg.TEST.SCALES=(720,)
       cfg.dataset = args.dataset
-      cfg.VGG_ORIGIN = False
       ## scales*11 is the new_width, new_width*ratio is new height
       # 30, 42, 60, 84, 120, 168, 240
       args.set_cfgs = ['ANCHOR_SCALES', '[2.72, 3.81, 5.45, 7.64, 10.9, 15.27, 21.8, 32]', 'ANCHOR_RATIOS', '[1,2]', 'MAX_NUM_GT_BOXES', '20']
       args.set_cfgs = ['ANCHOR_SCALES', '[0.75, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24, 30]', 'ANCHOR_RATIOS', '[1, 2]', 'MAX_NUM_GT_BOXES', '30']
-      
   elif args.dataset == "KITTIVOC":
-      args.imdb_name = "kittivoc_test"
-      args.imdbval_name = "kittivoc_test"
+      args.imdb_name = "kittivoc_val"
+      args.imdbval_name = "kittivoc_val"
       cfg.TEST.FG_THRESH = 0.5
-      cfg.imdb_name = "kittivoc_test"
+      cfg.imdb_name = "kittivoc_val"
       cfg.POOLING_SIZE_H = 7
       cfg.POOLING_SIZE_W = 7
       cfg.TEST.SCALES=(576,)
@@ -191,9 +188,9 @@ if __name__ == '__main__':
       cfg.POOLING_SIZE_W = 7
       cfg.dataset = args.dataset
       cfg.imdb_name = "widerface_train"
-      cfg.TEST.SCALES=(600,)
+      cfg.TRAIN.SCALES=(800,)
+      cfg.TEST.SCALES=(800,)
       cfg.sample_mode = 'bootstrap' # use bootstrap or ramdom as sampling method
-      cfg.VGG_ORIGIN = True # whether use vgg original classification layers
       cfg.TRAIN.USE_ALL_GT = True # choose true if want to exclude all proposals overlap with 'people' larger than 0.3
       cfg.filter_empty = False # whether filter 0 gt images
       cfg.DEBUG = False # set as True if debug whether 'people' is ignored
@@ -212,7 +209,6 @@ if __name__ == '__main__':
       cfg.TEST.NMS = 0.5 # original is 0.3, 0.5 is the same as official code
       cfg.TEST.SCALES=(1331,)
       cfg.sample_mode = 'ramdom' # use bootstrap or ramdom as sampling method
-      cfg.VGG_ORIGIN = False # whether use vgg original classification layers
       cfg.TRAIN.USE_ALL_GT = True # choose true if want to exclude all proposals overlap with 'people' larger than 0.3
       cfg.filter_empty = False # whether filter 0 gt images
       cfg.DEBUG = False # set as True if debug whether 'people' is ignored
@@ -243,16 +239,15 @@ if __name__ == '__main__':
       cfg.POOLING_SIZE_H = 7
       cfg.POOLING_SIZE_W = 7
       #args.set_cfgs = ['ANCHOR_SCALES', '[2.72, 3.81, 5.45, 7.64, 10.9, 15.27, 21.8, 32]', 'ANCHOR_RATIOS', '[2]', 'MAX_NUM_GT_BOXES', '20']
-      args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]', 'ANCHOR_RATIOS', '[0.5, 1, 2]', 'MAX_NUM_GT_BOXES', '20']
-      args.set_cfgs = ['ANCHOR_SCALES', '[0.75, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24, 30]', 'ANCHOR_RATIOS', '[0.5, 1, 2]', 'MAX_NUM_GT_BOXES', '30']
-
+      args.set_cfgs = ['ANCHOR_SCALES', '[4, 8, 16, 32]', 'ANCHOR_RATIOS', '[0.5, 1, 2]', 'MAX_NUM_GT_BOXES', '20']
+      # args.set_cfgs = ['ANCHOR_SCALES', '[0.75, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24, 30]', 'ANCHOR_RATIOS', '[0.5, 1, 2]', 'MAX_NUM_GT_BOXES', '30']
 
   elif args.dataset == "KAISTVOC":
       args.imdb_name = "kaist_train"
       args.imdbval_name = "kaist_test"
       cfg.dataset = args.dataset
       cfg.imdb_name = args.imdb_name
-      cfg.TRAIN.USE_FLIPPED = True 
+      cfg.TRAIN.USE_FLIPPED = True
       cfg.TRAIN.RPN_BATCHSIZE = 32
       cfg.TRAIN.BATCH_SIZE =128
       cfg.RPN_POSITIVE_OVERLAP = 0.5
@@ -262,7 +257,6 @@ if __name__ == '__main__':
       cfg.TRAIN.FG_THRESH = 0.45
       cfg.TEST.SCALES=(720,)
       cfg.sample_mode = 'bootstrap' # use bootstrap or ramdom as sampling method
-      cfg.VGG_ORIGIN = False # whether use vgg original classification layers
       cfg.TRAIN.USE_ALL_GT = True # choose true if want to exclude all proposals overlap with 'people' larger than 0.3
       cfg.ignore_people = False # ignore people, all proposals overlap with 'people' larger than 0.3 will be igonored
       cfg.filter_empty = False # whether filter 0 gt images
@@ -287,13 +281,13 @@ if __name__ == '__main__':
       args.imdb_name = "kitchen_train"
       args.imdbval_name = "kitchen_test"
       cfg.dataset = args.dataset
-      cfg.TRAIN.SCALES=(1024,)
+      cfg.TRAIN.SCALES=(800,)
       cfg.TRAIN.USE_FLIPPED = True
       cfg.imdb_name = args.imdb_name
       cfg.POOLING_SIZE_H = 7
       cfg.POOLING_SIZE_W = 7
-      args.set_cfgs = ['ANCHOR_SCALES', '[4, 8, 16, 32]', 'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
-      args.set_cfgs = ['ANCHOR_SCALES', '[0.75, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24, 30]', 'ANCHOR_RATIOS', '[0.5, 1, 2]', 'MAX_NUM_GT_BOXES', '30']
+      args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]', 'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+      # args.set_cfgs = ['ANCHOR_SCALES', '[0.75, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24, 30]', 'ANCHOR_RATIOS', '[0.5, 1, 2]', 'MAX_NUM_GT_BOXES', '30']
 
   elif args.dataset == "deeplesion":
         args.imdb_name = "deeplesion_trainval"
@@ -324,6 +318,7 @@ if __name__ == '__main__':
     cfg.TRAIN.SCALES=(800,)
     ## scales*11 is the new_width, new_width*ratio is new height
     # 30, 42, 60, 84, 120, 168, 240, 355
+    args.set_cfgs = ['ANCHOR_SCALES', '[4, 8, 16, 32]', 'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
     args.set_cfgs = ['ANCHOR_SCALES', '[0.75, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24, 30]', 'ANCHOR_RATIOS', '[0.5, 1, 2]', 'MAX_NUM_GT_BOXES', '50']
  
   args.cfg_file = "cfgs/{}_ls.yml".format(args.net) if args.large_scale else "cfgs/{}.yml".format(args.net)

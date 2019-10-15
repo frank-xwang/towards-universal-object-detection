@@ -60,7 +60,6 @@ class _AnchorTargetLayer(nn.Module):
                 int(float(input_shape[1] * input_shape[2]) / float(d)),
                 input_shape[3]
             )
-            #print('x shape is: ', x.shape)
             return x
 
         if cfg.sample_mode == 'bootstrap':
@@ -69,7 +68,6 @@ class _AnchorTargetLayer(nn.Module):
             im_info = input[2]
             num_boxes = input[3]
             fg_prob = input[4][:, self._num_anchors:, :, :].contiguous()
-            has_people = False
             # map of shape (batch_size, num_anchors, H, W)
             # rpn_cls_score is the score of each each anchors in
             # each positions(there are num_anchors in each position)
@@ -154,22 +152,6 @@ class _AnchorTargetLayer(nn.Module):
 
             if cfg.TRAIN.RPN_CLOBBER_POSITIVES:
                 labels[max_overlaps < cfg.TRAIN.RPN_NEGATIVE_OVERLAP] = 0
-            
-            ### wrote by Xudong Wang
-            # get index of people, change the lable of corresonding index to be -1, so, all the 
-            # anchors corrsponding to people will be ignored
-            if cfg.imdb_name == "caltech_train":
-                people_inds = (gt_labelNbox[:,:,4] == 2)
-                if torch.sum(people_inds) != 0:
-                    has_people = True
-                    for i in range(batch_size):
-                        single_p_inds = people_inds[i].cpu().numpy()
-                        p_list = np.where(single_p_inds == 1)[0]
-                        if cfg.DEBUG:  
-                            print('p_list is: ', p_list)
-                        for j in p_list:
-                            labels[i][(argmax_overlaps[i] == j) & (max_overlaps[i] >= cfg.TRAIN.RPN_NEGATIVE_OVERLAP)] = -1
-            ### End
 
             num_fg = int(cfg.TRAIN.RPN_FG_FRACTION * cfg.TRAIN.RPN_BATCHSIZE)
 
@@ -249,7 +231,7 @@ class _AnchorTargetLayer(nn.Module):
                                 .permute(0,3,1,2).contiguous()
             outputs.append(bbox_outside_weights)
 
-            return outputs, has_people
+            return outputs
 
         else:
             rpn_cls_score = input[0]

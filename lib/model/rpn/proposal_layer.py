@@ -67,10 +67,6 @@ class _ProposalLayer(nn.Module):
         bbox_deltas = input[1]
         im_info = input[2]
         cfg_key = input[3]
-        if cfg.has_people:
-            gt_boxes = input[4]
-            num_boxes = input[5]
-            rpn_cls_score = input[6]
 
         pre_nms_topN  = cfg[cfg_key].RPN_PRE_NMS_TOP_N
         post_nms_topN = cfg[cfg_key].RPN_POST_NMS_TOP_N
@@ -126,26 +122,6 @@ class _ProposalLayer(nn.Module):
         
         scores_keep = scores.clone()
         proposals_keep = proposals.clone()
-
-        # Wrote by Xudong Wang
-        if cfg.has_people:
-            for i in range(batch_size):
-                proposals_keep_single = proposals_keep[i].view(-1, 4).contiguous()
-                # Overlaps returned is size of (batch_size, )
-                overlaps, gt_labelNbox = bbox_overlaps_batch(proposals_keep_single, gt_boxes)
-                max_overlaps, argmax_overlaps = torch.max(overlaps, 2)
-                gt_max_overlaps, _ = torch.max(overlaps, 1)
-                people_inds = (gt_labelNbox[:,:,4] == 2)
-                if torch.sum(people_inds[i]) != 0:
-                    single_p_inds = people_inds[i].cpu().numpy()
-                    p_list = np.where(single_p_inds == 1)[0]
-                    if cfg.DEBUG:   
-                        print('p_list is: ', p_list)
-                    for j in p_list:
-                        # Change the score of proposals(whose iou w.r.t people is larger than 0.3) to be 2
-                        # So, these proposals will be ignored.(because bg probability is largest)
-                        scores_keep[i][(argmax_overlaps[i] == j) & (max_overlaps[i] >= cfg.TRAIN.RPN_NEGATIVE_OVERLAP)] = -1
-        # End
         _, order = torch.sort(scores_keep, 1, True) # True means using descending 
 
         output = scores.new(batch_size, post_nms_topN, 5).zero_()

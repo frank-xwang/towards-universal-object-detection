@@ -113,6 +113,15 @@ def parse_args():
   parser.add_argument('--DATA_DIR', dest='DATA_DIR',
                       help='path to DATA_DIR',
                       default="/home/xuw080/data4/universal_model/data/", type=str)
+  parser.add_argument('--num_se', dest='num_se',
+                      help='Number of se layers adapter',
+                      default=0, type=int)
+  parser.add_argument('--less_blocks', dest='less_blocks',
+                      help='Whether use less blocks',
+                      default='False', type=str)
+  parser.add_argument('--rpn_univ', dest='rpn_univ',
+                    help='Whether use universal rpn',
+                    default='True', type=str)
   args = parser.parse_args()
   return args
 
@@ -152,6 +161,7 @@ if __name__ == '__main__':
       args.imdbval_name = "coco_2014_minival"
       cfg.POOLING_SIZE_H = 7
       cfg.POOLING_SIZE_W = 7
+      cfg.TEST.SCALES=(800,)
       args.set_cfgs = ['ANCHOR_SCALES', '[4, 8, 16, 32]', 'ANCHOR_RATIOS', '[0.5,1,2]']
       cfg.dataset = args.dataset
   elif args.dataset == "imagenet":
@@ -185,9 +195,9 @@ if __name__ == '__main__':
       cfg.POOLING_SIZE_W = 7
       cfg.dataset = args.dataset
       cfg.imdb_name = "widerface_train"
-      cfg.TRAIN.SCALES=(600,)
+      cfg.TRAIN.SCALES=(800,)
+      cfg.TEST.SCALES=(800,)
       cfg.sample_mode = 'random' # use bootstrap or ramdom as sampling method
-      cfg.VGG_ORIGIN = True # whether use vgg original classification layers
       #cfg.TRAIN.USE_ALL_GT = True # choose true if want to exclude all proposals overlap with 'people' larger than 0.3
       cfg.filter_empty = False # whether filter 0 gt images
       cfg.DEBUG = False # set as True if debug whether 'people' is ignored
@@ -227,7 +237,6 @@ if __name__ == '__main__':
       cfg.TEST.NMS = 0.5 #original is 0.3, 0.5 is the same as official code
       cfg.TEST.SCALES=(1331,)
       cfg.sample_mode = 'random' # use bootstrap or ramdom as sampling method
-      cfg.VGG_ORIGIN = True # whether use vgg original classification layers
       cfg.TRAIN.USE_ALL_GT = True # choose true if want to exclude all proposals overlap with 'people' larger than 0.3
       cfg.filter_empty = False # whether filter 0 gt images
       cfg.DEBUG = False # set as True if debug whether 'people' is ignored
@@ -252,7 +261,6 @@ if __name__ == '__main__':
       cfg.TRAIN.FG_THRESH = 0.45
       cfg.TRAIN.SCALES=(720,)
       cfg.sample_mode = 'bootstrap' # use bootstrap or ramdom as sampling method
-      cfg.VGG_ORIGIN = False # whether use vgg original classification layers
       cfg.TRAIN.USE_ALL_GT = True # choose true if want to exclude all proposals overlap with 'people' larger than 0.3
       cfg.ignore_people = False # ignore people, all proposals overlap with 'people' larger than 0.3 will be igonored
       cfg.filter_empty = False # whether filter 0 gt images
@@ -267,6 +275,7 @@ if __name__ == '__main__':
       args.imdbval_name = "dota_val"
       cfg.dataset = args.dataset
       cfg.TRAIN.SCALES=(600,)
+      cfg.TRAIN.SCALES=(600,)
       cfg.TRAIN.USE_FLIPPED = True
       cfg.imdb_name = args.imdb_name
       cfg.POOLING_SIZE_H = 7
@@ -279,7 +288,8 @@ if __name__ == '__main__':
       args.imdb_name = "kitchen_train"
       args.imdbval_name = "kitchen_test"
       cfg.dataset = args.dataset
-      cfg.TRAIN.SCALES=(1024,)
+      cfg.TRAIN.SCALES=(800,)
+      cfg.TEST.SCALES=(800,)
       cfg.TRAIN.USE_FLIPPED = True
       cfg.imdb_name = args.imdb_name
       cfg.POOLING_SIZE_H = 7
@@ -288,11 +298,25 @@ if __name__ == '__main__':
       args.set_cfgs = ['ANCHOR_SCALES', '[0.75, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24, 30]', 'ANCHOR_RATIOS', '[0.5, 1, 2]', 'MAX_NUM_GT_BOXES', '30']
       cfg.dataset = args.dataset
 
+  elif args.dataset == "LISA":
+      args.imdb_name = "LISA_test"
+      args.imdbval_name = "LISA_test"
+      cfg.dataset = args.dataset
+      cfg.imdb_name = args.imdb_name
+      cfg.TRAIN.SCALES=(800,)
+      cfg.TEST.SCALES=(800,)
+      cfg.TEST.NMS = 0.3
+      cfg.POOLING_SIZE_H = 7
+      cfg.POOLING_SIZE_W = 7
+      args.set_cfgs = ['ANCHOR_SCALES', '[0.75, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24, 30]', 'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '30']
+      cfg.dataset = args.dataset
+
   elif args.dataset == "deeplesion":
         args.imdb_name = "deeplesion_trainval"
         args.imdbval_name = "deeplesion_test"
         cfg.dataset = args.dataset
         cfg.TRAIN.SCALES=(512,)
+        cfg.TEST.SCALES=(512,)
         cfg.TRAIN.RPN_BATCHSIZE = 128 # SHOULD CHANGE ABOVE BUILDING MODEL BLOCKS
         cfg.TRAIN.BATCH_SIZE = 64   # SHOULD CHANGE ABOVE BUILDING MODEL BLOCKS
         cfg.TRAIN.USE_FLIPPED = True
@@ -318,6 +342,7 @@ if __name__ == '__main__':
 
       cfg.dataset = args.dataset
       cfg.TRAIN.SCALES=(600,)
+      cfg.TEST.SCALES=(600,)
       cfg.TRAIN.BATCH_SIZE = 256
       cfg.TRAIN.RPN_BATCHSIZE = 256
       cfg.TRAIN.USE_FLIPPED = True
@@ -330,7 +355,11 @@ if __name__ == '__main__':
       args.set_cfgs = ['ANCHOR_SCALES', '[0.75, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24, 30]', 'ANCHOR_RATIOS', '[0.5, 1, 2]', 'MAX_NUM_GT_BOXES', '30']
 
   cfg.datasets_list = ['KITTIVOC','widerface','pascal_voc_0712','Kitchen','LISA']
+  # cfg.datasets_list = ['deeplesion','clipart','KITTIVOC']
+  # cfg.datasets_list = ['Kitchen', 'widerface', 'deeplesion','clipart','LISA']
+  # cfg.datasets_list = ['deeplesion','clipart','KITTIVOC', 'dota']
   # cfg.datasets_list = ['LISA','pascal_voc_0712','Kitchen','coco','clipart','watercolor','comic','widerface','dota','deeplesion','KITTIVOC']
+  # cfg.datasets_list = ['KITTIVOC','widerface','pascal_voc_0712','Kitchen','LISA','deeplesion','coco','clipart','comic', 'watercolor','dota']
   cfg.imdb_name_list                = univ_info(cfg.datasets_list, 'imdb_name', test=True)
   cfg.imdbval_name_list             = univ_info(cfg.datasets_list, 'imdbval_name', test=True)
   cfg.train_scales_list             = univ_info(cfg.datasets_list, 'SCALES', test=True)
@@ -349,12 +378,24 @@ if __name__ == '__main__':
   cfg.ANCHOR_NUM = np.arange(len(cfg.num_classes))
   for i in range(len(cfg.num_classes)):
       cfg.ANCHOR_NUM[i] = len(cfg.ANCHOR_SCALES_LIST[i])*len(cfg.ANCHOR_RATIOS_LIST[i])
-      
+  
+  cfg.rpn_univ = args.rpn_univ == 'True'
+  if cfg.rpn_univ:
+      cfg.ANCHOR_SCALES_LIST = [[0.75, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24, 30]]#[cfg.ANCHOR_SCALES]
+      cfg.ANCHOR_RATIOS_LIST = [cfg.ANCHOR_RATIOS]
+      cfg.ANCHOR_NUM = [len(cfg.ANCHOR_SCALES_LIST[0])*len(cfg.ANCHOR_RATIOS_LIST[0])]
+
+  cfg.mode = 'universal'
+
   #####################################################
   # NEED TO BE CHANGED IF USE NEW DATASETS FOR TRAINING
   # MUST MATCH TRAINING ODER
   cls_ind = cfg.datasets_list.index(args.dataset)
   cfg.cls_ind = cls_ind
+  cfg.dataset = cfg.datasets_list[cfg.cls_ind]
+  args.set_cfgs = ['ANCHOR_SCALES', '[0.75, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24, 30]', 'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '300']
+  cfg.POOLING_SIZE_H = 7
+  cfg.POOLING_SIZE_W = 7
   cfg.random_resize = False
   cfg.rpn_rois_process = 0
   #####################################################
@@ -366,8 +407,6 @@ if __name__ == '__main__':
 
   print('Using config:')
   pprint.pprint(cfg)
-  cfg.has_people = False
-  cfg.VGG_ORIGIN = True
   cfg.sample_mode = 'random'
   cfg.DEBUG = False # set as True if debug whether 'people' is ignored
   cfg.filter_empty = True
@@ -381,6 +420,8 @@ if __name__ == '__main__':
   cfg.finetuneBN_linear = args.finetuneBN_linear == 1
   cfg.fa_conv_num = args.fa_conv_num
   cfg.DATA_DIR = args.DATA_DIR
+  cfg.num_se = args.num_se
+  cfg.less_blocks = args.less_blocks == 'True'
 
   cfg.fix_bn = args.fix_bn == "True"
   if cfg.fix_bn: print("INFO: Fix batch normalization layers")
@@ -390,7 +431,7 @@ if __name__ == '__main__':
   if cfg.use_mux: print("INFO: Using BN MUX")
   else: print("INFO: Do not use BN MUX")
 
-  imdb, roidb, ratio_list, ratio_index = combined_roidb(args.imdbval_name, False)
+  imdb, roidb, ratio_list, ratio_index = combined_roidb(cfg.imdbval_name_list[cls_ind], False)
   imdb.competition_mode(on=True)
 
   print('{:d} roidb entries'.format(len(roidb)))
@@ -434,8 +475,6 @@ if __name__ == '__main__':
   fasterRCNN.load_state_dict(checkpoint['model'])
   # optimizer.load_state_dict(checkpoint['optimizer'])
   # lr = optimizer.param_groups[0]['lr']
-  if 'pooling_mode' in checkpoint.keys():
-    cfg.POOLING_MODE = checkpoint['pooling_mode']
 
   print('load model successfully!')
   # initilize the tensor holder here.

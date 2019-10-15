@@ -144,12 +144,18 @@ class ResNet(nn.Module):
   def _make_layer(self, block, planes, blocks, stride=1):
     downsample = None
     if stride != 1 or self.inplanes != planes * block.expansion:
-      downsample = nn.Sequential(
-        nn.Conv2d(self.inplanes, planes * block.expansion,
-              kernel_size=1, stride=stride, bias=False),
-        BnMux(planes * block.expansion),
-        #nn.BatchNorm2d(planes * block.expansion),
-      )
+      if cfg.use_mux:
+        downsample = nn.Sequential(
+            nn.Conv2d(self.inplanes, planes * block.expansion,
+                  kernel_size=1, stride=stride, bias=False),
+            BnMux(planes * block.expansion),
+        )
+      else:
+        downsample = nn.Sequential(
+          nn.Conv2d(self.inplanes, planes * block.expansion,
+                kernel_size=1, stride=stride, bias=False),
+          nn.BatchNorm2d(planes * block.expansion),
+        )
 
     layers = []
     layers.append(block(self.inplanes, planes, stride, downsample))
@@ -262,7 +268,9 @@ class resnet(_fasterRCNN):
         name = ''
         for n in range(len(k_list)-1):
           name += k_list[n] + '.'
-        if 'bn' in k and 'layer' in k:
+        if k in resnet.state_dict():
+          new_state_dict[k] = v
+        elif 'bn' in k and 'layer' in k:
           for n in range(len(cfg.num_classes)):
             current = name + str(n) + '.' + k_list[-1]
             if current in resnet.state_dict():
@@ -314,7 +322,7 @@ class resnet(_fasterRCNN):
       classname = m.__class__.__name__
       if classname.find('BatchNorm') != -1:
         for p in m.parameters(): p.requires_grad=False
-          
+  
     if cfg.fix_bn:
       self.RCNN_base.apply(set_bn_fix)
       self.RCNN_top.apply(set_bn_fix)

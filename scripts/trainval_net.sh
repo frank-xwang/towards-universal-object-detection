@@ -1,36 +1,36 @@
-BATCH_SIZE=16
+BATCH_SIZE=8
 net=se_res50
 WORKER_NUMBER=1
 LEARNING_RATE=0.01
 DECAY_STEP=10
-GPU_ID=0,1,2,3,4,5,6,7
-checkepoch=1
-SESSION=127
-CHECKPOINT=2
+GPU_ID=3,5,6,7
+checkepoch=10
+SESSION=133
+CHECKPOINT=1608
 
 #number of epochs to train
-epochs=20
+epochs=14
 resume=True
-datasets=KAISTVOC
 #datasets=coco
-datasets=clipart
 #datasets=comic
 #datasets=watercolor
 datasets=citypersons
-#datasets=dota
 datasets=caltech
-datasets=cross_domain
-datasets=deeplesion
-datasets=Kitchen
-datasets=coco
-datasets=pascal_voc
 datasets=KITTIVOC
-datasets=LISA
+datasets=deeplesion
+datasets=dota
+datasets=coco
 datasets=widerface
+datasets=Kitchen
+datasets=LISA
+datasets=cross_domain
+datasets=pascal_voc_0712
+datasets=watercolor
 
 fix_bn=True
 USE_FLIPPED=True
 DATA_DIR=/home/Xwang/HeadNode-1/universal_model_/data
+warmup_steps=0
 
 CUDA_VISIBLE_DEVICES=${GPU_ID} python trainval_net.py \
                     --dataset ${datasets} --net ${net} \
@@ -41,6 +41,7 @@ CUDA_VISIBLE_DEVICES=${GPU_ID} python trainval_net.py \
                     --DATA_DIR ${DATA_DIR} \
                     --fix_bn ${fix_bn} \
                     --s ${SESSION} \
+                    --warmup_steps ${warmup_steps} \
                     --epochs ${epochs}
                     --r ${resume} \
                     --checksession ${SESSION} \

@@ -37,7 +37,6 @@ class SEBasicBlock(nn.Module):
   def __init__(self, inplanes, planes, stride=1, downsample=None, se_loss=False, fixed_block=False):
     super(SEBasicBlock, self).__init__()
     self.se_loss = se_loss
-    self.fixed_block = fixed_block
     self.conv1 = conv3x3(inplanes, planes, stride)
     if cfg.use_mux: self.bn1 = nn.ModuleList([nn.BatchNorm2d(planes) for datasets in cfg.num_classes])
     else: self.bn1 = nn.BatchNorm2d(planes)
@@ -45,8 +44,7 @@ class SEBasicBlock(nn.Module):
     self.conv2 = conv3x3(planes, planes)
     if cfg.use_mux: self.bn2 = nn.ModuleList([nn.BatchNorm2d(planes) for datasets in cfg.num_classes])
     else: self.bn2 = nn.BatchNorm2d(planes)
-    self.datasets_attention = DatasetsAttention(planes, reduction=16, se_loss=se_loss, nclass_list=cfg.num_classes,\
-                              fixed_block=fixed_block, domain_pred=cfg.domain_pred)
+    self.datasets_attention = DatasetsAttention(planes, reduction=16, se_loss=se_loss, nclass_list=cfg.num_classes, fixed_block=fixed_block)
     self.downsample = downsample
     self.stride = stride
 
@@ -62,8 +60,8 @@ class SEBasicBlock(nn.Module):
     if cfg.use_mux: out = self.bn2[cfg.cls_ind](out)
     else: out = self.bn2(out)
 
-    if cfg.domain_pred and not self.fixed_block:
-      out, domain_pred = self.datasets_attention(out)
+    if self.se_loss:
+      out, SE_PRED = self.datasets_attention(out)
     else:
       out = self.datasets_attention(out)
 
@@ -72,8 +70,7 @@ class SEBasicBlock(nn.Module):
 
     out += residual
     out = self.relu(out)
-    if cfg.domain_pred and not self.fixed_block:
-      return out, domain_pred
+    if self.se_loss: return out, SE_PRED
     return out
 
 class SEBottleneck(nn.Module):
@@ -82,7 +79,6 @@ class SEBottleneck(nn.Module):
   def __init__(self, inplanes, planes, stride=1, downsample=None, se_loss=False, fixed_block=False):
     super(SEBottleneck, self).__init__()
     self.se_loss = se_loss
-    self.fixed_block = fixed_block
     self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=1, bias=False)
     if cfg.use_mux: self.bn1 = nn.ModuleList([nn.BatchNorm2d(planes) for datasets in cfg.num_classes])
     else: self.bn1 = nn.BatchNorm2d(planes)
@@ -93,8 +89,7 @@ class SEBottleneck(nn.Module):
     self.conv3 = nn.Conv2d(planes, planes * 4, kernel_size=1, bias=False)
     if cfg.use_mux: self.bn3 = nn.ModuleList([nn.BatchNorm2d(planes * 4) for datasets in cfg.num_classes])
     else: self.bn3 = nn.BatchNorm2d(planes * 4)
-    self.datasets_attention = DatasetsAttention(planes * 4, reduction=16, se_loss=se_loss,\
-                              nclass_list=cfg.num_classes, fixed_block=fixed_block, domain_pred=cfg.domain_pred)
+    self.datasets_attention = DatasetsAttention(planes * 4, reduction=16, se_loss=se_loss, nclass_list=cfg.num_classes, fixed_block=fixed_block)
     self.relu = nn.ReLU(inplace=True)
     self.downsample = downsample
     self.stride = stride
@@ -116,8 +111,8 @@ class SEBottleneck(nn.Module):
     if cfg.use_mux: out = self.bn3[cfg.cls_ind](out)
     else: out = self.bn3(out)
 
-    if cfg.domain_pred and not self.fixed_block:
-      out, domain_pred = self.datasets_attention(out)
+    if self.se_loss:
+      out, SE_PRED = self.datasets_attention(out)
     else:
       out = self.datasets_attention(out)
 
@@ -126,12 +121,7 @@ class SEBottleneck(nn.Module):
 
     out += residual
     out = self.relu(out)
-    if cfg.domain_pred and not self.fixed_block:
-      if cfg.domain_preds is None:
-        cfg.domain_preds = domain_pred.cpu()
-      else:
-        domain_pred = domain_pred.view(cfg.domain_preds.size(0), -1, domain_pred.size(1), domain_pred.size(2))
-        cfg.domain_preds += torch.mean(domain_pred,1).cpu()
+    if self.se_loss: return out, SE_PRED
     return out
 
 class BnMux(nn.Module):
@@ -142,23 +132,54 @@ class BnMux(nn.Module):
         )
 
     def forward(self, x):
+        #print('bn_mux is forwarding', cfg.cls_ind)
         out = self.bn[cfg.cls_ind](x)
+        # if cfg.nums == 1:
+        #     print(('layer.weight',self.bn[cfg.cls_ind].weight))
         return out
         
 class DataAttentionResNet(nn.Module):
   def __init__(self, block, layers, num_classes=1000, se_loss=False):
     self.inplanes = 64
+    fixed_block = False
     super(DataAttentionResNet, self).__init__()
     self.se_loss = se_loss
     self.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3,
                  bias=False)                                        # rcnn.base.0
     self.bn1 = nn.BatchNorm2d(64)                                   # rcnn.base.1
     self.relu = nn.ReLU(inplace=True)                               # 2
-    self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=0, ceil_mode=True)  # 3
-    self.layer1 = self._make_layer(block, 64, layers[0], se_loss=False, fixed_block=True)  # rcnn.base.4
-    self.layer2 = self._make_layer(block, 128, layers[1], stride=2, se_loss=se_loss)       # rcnn.base.5
-    self.layer3 = self._make_layer(block, 256, layers[2], stride=2, se_loss=se_loss)       # rcnn.base.6
-    self.layer4 = self._make_layer(block, 512, layers[3], stride=2, se_loss=False)         # rcnn.top
+    self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=0, ceil_mode=True) # 3
+    cfg.start_fix = False
+    if cfg.RESNET.FIXED_BLOCKS >= 1: fixed_block = True
+    else:
+      cfg.start_fix = True
+      cfg.layer_index = 0
+      cfg.block_id = 1
+    self.layer1 = self._make_layer(block, 64, layers[0], se_loss=False, fixed_block=fixed_block)              # rcnn.base.4
+    fixed_block = False
+    if cfg.RESNET.FIXED_BLOCKS >= 2: fixed_block = True
+    else: 
+      cfg.start_fix = True
+      cfg.layer_index = 0
+      cfg.block_id = 2
+    self.layer2 = self._make_layer(block, 128, layers[1], stride=2, se_loss=se_loss, fixed_block=fixed_block) # rcnn.base.5
+    fixed_block = False
+    if cfg.RESNET.FIXED_BLOCKS >= 3: fixed_block = True
+    else:
+      cfg.start_fix = True
+      cfg.layer_index = 0
+      cfg.block_id = 3
+    self.layer3 = self._make_layer(block, 256, layers[2], stride=2, se_loss=se_loss, fixed_block=fixed_block) # rcnn.base.6
+    fixed_block = False
+    if cfg.RESNET.FIXED_BLOCKS >= 4: fixed_block = True
+    else: 
+      cfg.start_fix = True
+      cfg.layer_index = 0
+      cfg.block_id = 4
+    self.layer4 = self._make_layer(block, 512, layers[3], stride=2, se_loss=False, fixed_block=fixed_block)   # rcnn.top
+    fixed_block = False
+    # it is slightly better whereas slower to set stride = 1
+    # self.layer4 = self._make_layer(block, 512, layers[3], stride=1)
     self.avgpool = nn.AvgPool2d(7)
     # block.expansion is 1
     #self.fc = nn.ModuleList([nn.Linear(512 * block.expansion, num_classes) for num_class in cfg.num_classes])
@@ -180,6 +201,7 @@ class DataAttentionResNet(nn.Module):
           nn.Conv2d(self.inplanes, planes * block.expansion,
                 kernel_size=1, stride=stride, bias=False),
           BnMux(planes * block.expansion),
+          #nn.BatchNorm2d(planes * block.expansion),
         )
       else:
         downsample = nn.Sequential(
@@ -189,17 +211,20 @@ class DataAttentionResNet(nn.Module):
         )
 
     layers = []
-    layers.append(block(self.inplanes, planes, stride, downsample, fixed_block=fixed_block))
+    layers.append(block(self.inplanes, planes, stride, downsample,fixed_block=fixed_block))
+    if cfg.start_fix:
+      cfg.layer_index += 1
     self.inplanes = planes * block.expansion
     for i in range(1, blocks):
       if i == blocks - 1:
-        layers.append(block(self.inplanes, planes, se_loss=se_loss, fixed_block=fixed_block))
+        layers.append(block(self.inplanes, planes, se_loss=se_loss,fixed_block=fixed_block))
       else:
-        layers.append(block(self.inplanes, planes, se_loss=False, fixed_block=fixed_block))
+        layers.append(block(self.inplanes, planes, se_loss=False,fixed_block=fixed_block))
+      if cfg.start_fix:
+        cfg.layer_index += 1
     return nn.Sequential(*layers)
 
   def forward(self, x):
-
     x = self.conv1(x)
     x = self.bn1(x)
     x = self.relu(x)
@@ -208,12 +233,18 @@ class DataAttentionResNet(nn.Module):
     x = self.layer1(x)
     x = self.layer2(x)
 
-    x = self.layer3(x)
-    x = self.layer4(x) 
+    if self.se_loss:
+      x, se_pred1 = self.layer3(x)
+      x, se_pred2 = self.layer4(x)
+    else:
+      x = self.layer3(x)
+      x = self.layer4(x) 
 
     x = self.avgpool(x)
     x = x.view(x.size(0), -1)
+    #x = self.fc[cfg.cls_ind](x)
     x = self.fc(x)
+    if self.se_loss: return x, se_pred1, se_pred2
     return x
 
 def data_att_resnet18(pretrained=False, se_loss=False):
@@ -242,6 +273,8 @@ def data_att_resnet50(pretrained=False, se_loss=False):
     pretrained (bool): If True, returns a model pre-trained on ImageNet
   """
   model = DataAttentionResNet(SEBottleneck, [3, 4, 6, 3], se_loss=se_loss)
+#   if pretrained:
+#     model.load_state_dict(model_zoo.load_url(model_urls['resnet50']))
   return model
 
 def data_att_resnet101(pretrained=False, se_loss=False):
@@ -268,7 +301,7 @@ class Datasets_Attention(_fasterRCNN):
   def __init__(self, classes, num_layers=101, pretrained=False, class_agnostic=False, rpn_batchsize_list=None, se_loss=False, se_weight=1.0):
     self.se_loss = se_loss
     self.se_weight = se_weight
-    self.model_path = '/home/Xwang/HeadNode-1/universal_model_/data/pretrained_model/se_resnet' + str(num_layers) + '.pth.tar'
+    self.model_path = 'data/pretrained_model/se_resnet' + str(num_layers) + '.pth.tar'
     if num_layers == 18:
       self.dout_base_model = 256
     else:
@@ -317,8 +350,9 @@ class Datasets_Attention(_fasterRCNN):
             if current in resnet.state_dict():
               new_state_dict[current] = v
         elif '.se.' in k:
-          for n in range(len(cfg.num_classes)):
+          for n in range(cfg.num_se):
             current = se_name + str(n) + '.' + k_list[-3] + '.' + k_list[-2] + '.' + k_list[-1]
+            #print('se: ',current)
             if current in resnet.state_dict():
               new_state_dict[current] = v          
         else:
@@ -328,14 +362,17 @@ class Datasets_Attention(_fasterRCNN):
           se_weight_name = k_list[1] + '.' + k_list[2] + '.datasets_attention.weight_' + str(id+1)
           if se_weight_name in resnet.state_dict():
             new_state_dict[se_weight_name] = resnet.state_dict()[se_weight_name]
+            #print(se_weight_name)
           se_bias_name = k_list[1] + '.' + k_list[2] + '.datasets_attention.bias_' + str(id+1)
           if se_bias_name in resnet.state_dict():
             new_state_dict[se_bias_name] = resnet.state_dict()[se_bias_name]
           se_weight_name = k_list[1] + '.' + k_list[2] + '.datasets_attention.fc_'
-          for appendix in ['1.weight','1.bias','2.weight','2.bias']:
+          for appendix in ['1.weight','1.bias','2.weight','2.bias','3.weight','3.bias',\
+                           '4.weight','4.bias','5.weight','5.bias']:
             final_name = se_weight_name + appendix
             if final_name in resnet.state_dict():
               new_state_dict[final_name] = resnet.state_dict()[final_name]
+            #print(se_bias_name)
 
         if 'fc.0.' in k:
           for n in range(len(cfg.num_classes)):
@@ -355,6 +392,7 @@ class Datasets_Attention(_fasterRCNN):
               new_state_dict[current] = resnet.state_dict()[current]
       resnet.load_state_dict(new_state_dict)
     # Build resnet.
+    # RCNN_base[0]: resnet.conv1, RCNN_base[1]: resnet.bn1 ......
     self.RCNN_base = nn.Sequential(resnet.conv1, resnet.bn1,resnet.relu,
       resnet.maxpool,resnet.layer1,resnet.layer2,resnet.layer3)
 
@@ -414,6 +452,7 @@ class Datasets_Attention(_fasterRCNN):
     # Override train so that the training mode is set as we want
     nn.Module.train(self, mode)
     if mode:
+      print('traing in process')
       # Set fixed blocks to be in eval mode
       self.RCNN_base.eval()
       self.RCNN_base[5].train()
@@ -429,13 +468,5 @@ class Datasets_Attention(_fasterRCNN):
         self.RCNN_top.apply(set_bn_eval)
 
   def _head_to_tail(self, pool5):
-    # if isinstance(self.RCNN_top, nn.Sequential) and cfg.domain_pred:
-    #   for neck in self.RCNN_top:
-    #     print("before neck: ", len(pool5))
-    #     pool5, domain_pred = neck(pool5)
-    #     print("after neck: ", len(pool5))
-    #   return pool5.mean(3).mean(2), domain_pred
-    # else:
-    #   fc7 = self.RCNN_top(pool5).mean(3).mean(2)
     fc7 = self.RCNN_top(pool5).mean(3).mean(2)
     return fc7

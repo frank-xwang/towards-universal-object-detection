@@ -87,7 +87,10 @@ class SEBottleneck(nn.Module):
     self.conv3 = nn.Conv2d(planes, planes * 4, kernel_size=1, bias=False)
     if cfg.use_mux: self.bn3 = nn.ModuleList([nn.BatchNorm2d(planes * 4) for datasets in cfg.num_classes])
     else: self.bn3 = nn.BatchNorm2d(planes * 4)
-    self.se = nn.ModuleList([SELayer(planes * 4, 16, se_loss=se_loss, nclass=num_class) for num_class in cfg.num_classes])
+    if cfg.mode == 'adaptive':
+      self.se = nn.ModuleList([SELayer(planes * 4, 16, se_loss=se_loss, nclass=num_class) for num_class in cfg.num_classes])
+    else:
+      self.se = SELayer(planes * 4, 16, se_loss=se_loss)
     self.relu = nn.ReLU(inplace=True)
     self.downsample = downsample
     self.stride = stride
@@ -109,8 +112,12 @@ class SEBottleneck(nn.Module):
     if cfg.use_mux: out = self.bn3[cfg.cls_ind](out)
     else: out = self.bn3(out)
     
-    if self.se_loss: out, SE_PRED = self.se[cfg.cls_ind](out)
-    else: out = self.se[cfg.cls_ind](out)
+    if cfg.mode == 'adaptive' and self.se_loss:
+      out, SE_PRED = self.se[cfg.cls_ind](out)
+    elif cfg.mode == 'adaptive':
+      out = self.se[cfg.cls_ind](out)
+    else:
+      out = self.se(out)
 
     if self.downsample is not None:
       residual = self.downsample(x)
@@ -128,10 +135,7 @@ class BnMux(nn.Module):
         )
 
     def forward(self, x):
-        #print('bn_mux is forwarding', cfg.cls_ind)
         out = self.bn[cfg.cls_ind](x)
-        # if cfg.nums == 1:
-        #     print(('layer.weight',self.bn[cfg.cls_ind].weight))
         return out
         
 class SEResNet(nn.Module):
@@ -299,7 +303,7 @@ class seresnet(_fasterRCNN):
         name = ''
         for n in range(len(k_list)-1):
           if n == 0: continue
-          if 'se' == k_list[n]: 
+          if 'se' == k_list[n]:
             se_name = name + k_list[n] + '.'
           name += k_list[n] + '.'
         k_new = name + k_list[-1]

@@ -1,25 +1,31 @@
+# 104_x_787 and 105, 112, 111, 130, 152, 140 use it
 import torch
+import numpy as np
 from torch import nn
 import torch.nn.functional as F
 from model.utils.config import cfg
+import torch
 from model.faster_rcnn.se_module_vector import SELayer
 
 class DatasetsAttention(nn.Module):
-    def __init__(self, planes, reduction=16, se_loss=False, nclass_list=None, fixed_block=False, num_se=0, domain_pred=False):
+    def __init__(self, planes, reduction=16, se_loss=False, nclass_list=None, fixed_block=False):
         super(DatasetsAttention, self).__init__()
         self.planes = planes
-        self.domain_pred = domain_pred
+        num_se = cfg.num_se
         if num_se == 0:
             self.n_datasets = len(nclass_list)
         else:
             self.n_datasets = num_se
         self.fixed_block = fixed_block
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
-        cfg.less_blocks = False
         if not self.fixed_block and cfg.less_blocks:
-            if cfg.layer_index %2 == 0:
-                self.fixed_block = True
-        if self.fixed_block:
+            if cfg.block_id != 4:
+                if cfg.layer_index % 2 == 0:
+                    self.fixed_block = True
+            else:
+                if cfg.layer_index % 2 != 0:
+                    self.fixed_block = True
+        if self.fixed_block or num_se == 1:
             self.SE_Layers = nn.ModuleList([SELayer(planes, reduction, se_loss=se_loss, nclass=num_class, with_sigmoid=False) for num_class in range(1)])
         elif num_se == 0:
             self.SE_Layers = nn.ModuleList([SELayer(planes, reduction, se_loss=se_loss, nclass=num_class, with_sigmoid=False) for num_class in nclass_list])
@@ -36,6 +42,7 @@ class DatasetsAttention(nn.Module):
             SELayers_Matrix = self.SE_Layers[0](x).view(b, c, 1, 1)
             SELayers_Matrix = self.sigmoid(SELayers_Matrix)
         else:
+            #SELayers_Matrix_ = self.SE_Layers[cfg.cls_ind](x).view(b, c, 1, 1)
             weight = self.fc_1(self.avg_pool(x).view(b, c))
             weight = self.softmax(weight).view(b, self.n_datasets, 1)
             for i, SE_Layer in enumerate(self.SE_Layers):
@@ -45,6 +52,4 @@ class DatasetsAttention(nn.Module):
                     SELayers_Matrix = torch.cat((SELayers_Matrix, SE_Layer(x).view(b, c, 1)), 2)
             SELayers_Matrix = torch.matmul(SELayers_Matrix, weight).view(b, c, 1, 1)
             SELayers_Matrix = self.sigmoid(SELayers_Matrix)
-            if self.domain_pred:
-                return x*SELayers_Matrix, weight
         return x*SELayers_Matrix

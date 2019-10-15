@@ -55,7 +55,7 @@ class _RPN(nn.Module):
         )
         return x
 
-    def forward(self, base_feat, im_info, gt_boxes, num_boxes):
+    def forward(self, base_feat, im_info, gt_boxes, num_boxes, ):
         
         batch_size = base_feat.size(0)
 
@@ -77,11 +77,10 @@ class _RPN(nn.Module):
         self.rpn_loss_cls = 0
         self.rpn_loss_box = 0
         # generating training labels and build the rpn loss
-        has_people = False
         if self.training:
             assert gt_boxes is not None
             if cfg.sample_mode == 'bootstrap':
-                rpn_data, has_people = self.RPN_anchor_target((rpn_cls_score.data, gt_boxes, im_info, num_boxes, rpn_cls_prob.data))
+                rpn_data = self.RPN_anchor_target((rpn_cls_score.data, gt_boxes, im_info, num_boxes, rpn_cls_prob.data))
             else:
                 rpn_data = self.RPN_anchor_target((rpn_cls_score.data, gt_boxes, im_info, num_boxes))
 
@@ -109,10 +108,8 @@ class _RPN(nn.Module):
         # In RPN_proposal layer, we will choose 2000 proposals from about 20,000 after this step
         # they will sort all proposals w.r.t score(12,000 will be saved) and use nms to choose
         # 2000 proposals from the 12,000 proposals 
-        cfg.has_people = False
-        if has_people and self.training and (cfg.use_coco_igonore==False):
-            cfg.has_people = True
-            # rois[:,:,0] is the batch size number, means nothing for us.
+        if self.training and (cfg.use_coco_igonore==False):
+            # rois[:,:,0] is the batch size number
             rois = self.RPN_proposal((rpn_cls_prob.data, rpn_bbox_pred.data,
                                  im_info, cfg_key, gt_boxes, num_boxes, rpn_cls_score.data))
         else:

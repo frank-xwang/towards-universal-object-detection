@@ -55,7 +55,7 @@ def update_chosen_se_layer(model, cls_ind):
     num_datasets = len(cfg.datasets_list)
     for name, param in model.named_parameters():
         if param.requires_grad and 'datasets_attention.SE_Layers.' in name and int(name.split('.')[-4]) != cls_ind:
-            param.grad.data.fill_(0)            
+            param.grad.data.fill_(0)
             # print(name, int(name.split('.')[-4]), cls_ind, int(name.split('.')[-4]) != cls_ind)
 
 def print_chosen_se_layer(model, cls_ind):

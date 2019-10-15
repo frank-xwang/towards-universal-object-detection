@@ -56,6 +56,7 @@ class _RPN(nn.Module):
         #self.nc_bbox_out = len(self.anchor_scales) * len(self.anchor_ratios) * 4 # 4(coords) * 9 (anchors)
         add_num = self.add_filter_num(512)
         self.RPN_bbox_pred_layers = nn.ModuleList([nn.Conv2d(512+add_num, 4*nc_score_out, 1, 1, 0) for nc_score_out in cfg.ANCHOR_NUM])
+            
         if cfg.reinit_rpn == False and cfg.Only_FinetuneBN:
             params_name_w = 'RCNN_rpn.RPN_bbox_pred.weight'
             params_name_b = 'RCNN_rpn.RPN_bbox_pred.bias'
@@ -92,7 +93,8 @@ class _RPN(nn.Module):
         else:
             add_num1 = cfg.add_filter_num
             add_num2 = cfg.add_filter_num
-        return add_num1,add_num2    
+        return add_num1,add_num2
+
     @staticmethod
     def reshape(x, d):
         input_shape = x.size()
@@ -105,26 +107,30 @@ class _RPN(nn.Module):
         return x
 
     def forward(self, base_feat, im_info, gt_boxes, num_boxes, cls_ind):
+        if cfg.rpn_univ:
+            cls_ind = 0
+        else:
+            cls_ind = cfg.cls_ind
         
         batch_size = base_feat.size(0)
 
         # return feature map after convrelu layer
         rpn_conv1 = F.relu(self.RPN_Conv(base_feat), inplace=True)
         # get rpn classification score
-        rpn_cls_score = self.RPN_cls_score_layers[cfg.cls_ind](rpn_conv1)
+        rpn_cls_score = self.RPN_cls_score_layers[cls_ind](rpn_conv1)
 
         rpn_cls_score_reshape = self.reshape(rpn_cls_score, 2)
         rpn_cls_prob_reshape = F.softmax(rpn_cls_score_reshape)
-        self.nc_score_out = cfg.ANCHOR_NUM[cfg.cls_ind]*2
+        self.nc_score_out = cfg.ANCHOR_NUM[cls_ind]*2
         rpn_cls_prob = self.reshape(rpn_cls_prob_reshape, self.nc_score_out)
 
         # get rpn offsets to the anchor boxes
-        rpn_bbox_pred = self.RPN_bbox_pred_layers[cfg.cls_ind](rpn_conv1)
+        rpn_bbox_pred = self.RPN_bbox_pred_layers[cls_ind](rpn_conv1)
 
         # proposal layer
         cfg_key = 'TRAIN' if self.training else 'TEST'
 
-        rois = self.RPN_proposal[cfg.cls_ind]((rpn_cls_prob.data, rpn_bbox_pred.data,
+        rois = self.RPN_proposal[cls_ind]((rpn_cls_prob.data, rpn_bbox_pred.data,
                                  im_info, cfg_key))
 
         self.rpn_loss_cls = 0
@@ -135,7 +141,7 @@ class _RPN(nn.Module):
             assert gt_boxes is not None
 
             # decide which RPN_anchor_target layers to use
-            rpn_data = self.RPN_anchor_target_layers[cfg.cls_ind]((rpn_cls_score.data, gt_boxes, im_info, num_boxes))
+            rpn_data = self.RPN_anchor_target_layers[cls_ind]((rpn_cls_score.data, gt_boxes, im_info, num_boxes))
 
             # compute classification loss
             rpn_cls_score = rpn_cls_score_reshape.permute(0, 2, 3, 1).contiguous().view(batch_size, -1, 2)

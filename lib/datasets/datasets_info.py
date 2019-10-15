@@ -30,9 +30,10 @@ def get_datasets_info(dataset, use_dict = False, test=False):
         datasets_info['imdb_name'] = "voc_2007_trainval+voc_2012_trainval"
         datasets_info['imdbval_name'] = "voc_2007_test"
         datasets_info['set_cfgs'] = ['ANCHOR_SCALES', '[8, 16, 32]', 'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
-        datasets_info['MAX_NUM_GT_BOXES'] = 20 
+        datasets_info['MAX_NUM_GT_BOXES'] = 20
         datasets_info['RPN_BATCHSIZE'] = 256
         datasets_info['BATCH_SIZE'] = 256
+        # datasets_info['ANCHOR_SCALES'] = [4, 8, 16, 32]
         datasets_info['ANCHOR_SCALES'] = [0.75, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24, 30]
         datasets_info['ANCHOR_RATIOS'] = [0.5, 1, 2]
         datasets_info['num_classes'] = 21
@@ -97,11 +98,11 @@ def get_datasets_info(dataset, use_dict = False, test=False):
         datasets_info['USE_FLIPPED'] = True 
     elif dataset == "KITTIVOC":
         datasets_info['imdb_name'] = "kittivoc_train"
-        datasets_info['imdbval_name'] = "kittivoc_test"
+        datasets_info['imdbval_name'] = "kittivoc_val"
         datasets_info['RPN_BATCHSIZE'] = 256
         datasets_info['BATCH_SIZE'] = 128
         if test:
-            datasets_info['imdb_name'] = "kittivoc_test"
+            datasets_info['imdb_name'] = "kittivoc_val"
         datasets_info['dataset'] = dataset
         datasets_info['RPN_POSITIVE_OVERLAP'] = 0.5
         datasets_info['RPN_NMS_THRESH'] = 0.65
@@ -141,7 +142,6 @@ def get_datasets_info(dataset, use_dict = False, test=False):
         datasets_info['FG_THRESH'] = 0.45
         datasets_info['SCALES'] =(720,)
         datasets_info['sample_mode'] = 'bootstrap' # use bootstrap or ramdom as sampling method
-        datasets_info['VGG_ORIGIN'] = False # whether use vgg original classification layers
         datasets_info['USE_ALL_GT'] = True # choose true if want to exclude all proposals overlap with 'people' larger than 0.3
         datasets_info['ignore_people'] = False # ignore people, all proposals overlap with 'people' larger than 0.3 will be igonored
         datasets_info['filter_empty'] = False # whether filter 0 gt images
@@ -159,7 +159,7 @@ def get_datasets_info(dataset, use_dict = False, test=False):
         datasets_info['POOLING_SIZE_W'] = 7
         datasets_info['dataset'] = dataset
         datasets_info['imdb_name'] = "widerface_train"
-        datasets_info['SCALES'] = (600,)
+        datasets_info['SCALES'] = (800,)
         datasets_info['MAX_NUM_GT_BOXES'] = 300
         datasets_info['RPN_BATCHSIZE'] = 256
         datasets_info['BATCH_SIZE'] = 256
@@ -170,14 +170,13 @@ def get_datasets_info(dataset, use_dict = False, test=False):
             datasets_info['RPN_NMS_THRESH'] = 0.65
         datasets_info['FG_THRESH'] = 0.45
         datasets_info['sample_mode'] = 'random'
-        datasets_info['VGG_ORIGIN'] = True
         datasets_info['filter_empty'] = False
         datasets_info['DEBUG'] = False
         datasets_info['set_cfgs'] = ['ANCHOR_SCALES', '[0.75, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24, 30]', 'ANCHOR_RATIOS', '[1]', 'MAX_NUM_GT_BOXES', '300']
         datasets_info['ANCHOR_SCALES'] = [0.75, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24, 30]
         datasets_info['ANCHOR_RATIOS'] = [1]
         datasets_info['num_classes'] = 2
-        datasets_info['USE_FLIPPED'] = True 
+        datasets_info['USE_FLIPPED'] = True
     elif dataset in ["clipart","comic","watercolor",'cross_domain']:
         if dataset == "clipart" :
             datasets_info['imdb_name'] = "clipart_train"
@@ -201,7 +200,6 @@ def get_datasets_info(dataset, use_dict = False, test=False):
         datasets_info['USE_FLIPPED'] = True
         datasets_info['filter_empty'] = True
         datasets_info['sample_mode'] = 'random'
-        datasets_info['VGG_ORIGIN'] = True
         datasets_info['POOLING_SIZE_H'] = 7
         datasets_info['POOLING_SIZE_W'] = 7
         datasets_info['MAX_NUM_GT_BOXES'] = 30
@@ -242,7 +240,6 @@ def get_datasets_info(dataset, use_dict = False, test=False):
             datasets_info['RPN_NMS_THRESH'] = 0.65
         datasets_info['FG_THRESH'] = 0.5
         datasets_info['sample_mode'] = 'random'
-        datasets_info['VGG_ORIGIN'] = True
         datasets_info['filter_empty'] = False
         datasets_info['DEBUG'] = False
         datasets_info['set_cfgs'] = ['ANCHOR_SCALES', '[0.75, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24, 30]', 'ANCHOR_RATIOS', '[0.5, 1, 2]', 'MAX_NUM_GT_BOXES', '100']
@@ -265,14 +262,13 @@ def get_datasets_info(dataset, use_dict = False, test=False):
         datasets_info['RPN_NMS_THRESH'] = 0.7
         datasets_info['FG_THRESH'] = 0.5
         datasets_info['sample_mode'] = 'random'
-        datasets_info['VGG_ORIGIN'] = True
         datasets_info['filter_empty'] = False
         datasets_info['DEBUG'] = False
-        datasets_info['set_cfgs'] = ['ANCHOR_SCALES', '[0.75, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24, 30]', 'ANCHOR_RATIOS', '[0.5, 1, 2]', 'MAX_NUM_GT_BOXES', '30']
+        datasets_info['set_cfgs'] = ['ANCHOR_SCALES', '[4, 8, 16, 32]', 'ANCHOR_RATIOS', '[0.5, 1, 2]', 'MAX_NUM_GT_BOXES', '30']
         datasets_info['ANCHOR_SCALES'] = [0.75, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24, 30]
         datasets_info['ANCHOR_RATIOS'] = [0.5, 1, 2]
         datasets_info['num_classes'] = 12
-        datasets_info['USE_FLIPPED'] = True 
+        datasets_info['USE_FLIPPED'] = True
     
     elif dataset == "deeplesion":
         datasets_info['imdbval_name'] = "deeplesion_test"
@@ -288,7 +284,6 @@ def get_datasets_info(dataset, use_dict = False, test=False):
         datasets_info['RPN_NMS_THRESH'] = 0.7
         datasets_info['FG_THRESH'] = 0.5
         datasets_info['sample_mode'] = 'random'
-        datasets_info['VGG_ORIGIN'] = True
         datasets_info['filter_empty'] = False
         datasets_info['DEBUG'] = False
         datasets_info['set_cfgs'] = ['ANCHOR_SCALES', '[0.75, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24, 30]', 'ANCHOR_RATIOS', '[0.5, 1, 2]', 'MAX_NUM_GT_BOXES', '10']
@@ -311,10 +306,10 @@ def get_datasets_info(dataset, use_dict = False, test=False):
         datasets_info['RPN_NMS_THRESH'] = 0.65
         datasets_info['FG_THRESH'] = 0.45
         datasets_info['sample_mode'] = 'random'
-        datasets_info['VGG_ORIGIN'] = True
         datasets_info['filter_empty'] = False
         datasets_info['DEBUG'] = False
-        datasets_info['set_cfgs'] = ['ANCHOR_SCALES', '[0.75, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24, 30]', 'ANCHOR_RATIOS', '[0.5, 1, 2]', 'MAX_NUM_GT_BOXES', '10']
+        datasets_info['set_cfgs'] = ['ANCHOR_SCALES', '[4, 8, 16, 32]', 'ANCHOR_RATIOS', '[0.5, 1, 2]', 'MAX_NUM_GT_BOXES', '10']
+        # datasets_info['ANCHOR_SCALES'] = [4, 8, 16, 32]
         datasets_info['ANCHOR_SCALES'] = [0.75, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24, 30]
         datasets_info['ANCHOR_RATIOS'] = [0.5, 1, 2]
         datasets_info['num_classes'] = 5

@@ -52,24 +52,8 @@ class _fasterRCNN(nn.Module):
         # feed image data to base model to obtain base feature map
         cfg.n = 0
         x = im_data
-        # for index, layer in enumerate(self.RCNN_base):
-        #     if isinstance(layer, nn.Sequential):
-        #         for neck in layer:
-        #             print("pre length: ", len(x))
-        #             x = neck(x)
-        #             print("length: ", len(x))
-        #             if len(x) == 2:
-        #                 domain_pred = x[1]
-        #                 x = x[0]
-        #                 print("neck", neck)
-        #             print("after length: ", len(x))
-        #     else:
-        #         print("Layer: ", layer)
-        #         x = layer(x)
-        #         print("Layer: ", len(x))
         x = self.RCNN_base(x)
         base_feat = x
-        # print("Base is finished")
         
         # feed base feature map tp RPN to obtain rois
         rois, rpn_loss_cls, rpn_loss_bbox = self.RCNN_rpn(base_feat, im_info, gt_boxes, num_boxes, cfg.cls_ind)

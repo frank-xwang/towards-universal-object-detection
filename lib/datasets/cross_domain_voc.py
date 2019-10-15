@@ -48,10 +48,11 @@ class cross_domain(imdb):
         self.devkit_path = devkit_path
         self._devkit_path = self._get_default_path() if self.devkit_path is None else self.devkit_path
         self._data_path = os.path.join(self._devkit_path)
-        self._classes = ('__background__',"aeroplane","bicycle","bird","boat","bottle",
-                        "bus","car","cat","chair","cow",
-                        "diningtable","dog","horse", "motorbike", "person", "pottedplant", "sheep", "sofa", "train", "tvmonitor")
-        # self._classes = ('__background__',"bicycle","bird","car","cat","dog","person")    
+        self._classes = ('__background__',"aeroplane","bicycle","bird","boat","bottle", \
+                        "bus","car","cat","chair","cow", "diningtable","dog","horse", \
+                        "motorbike", "person", "pottedplant", "sheep", "sofa", "train", "tvmonitor")
+        # if cfg.dataset == 'comic' or cfg.dataset == 'watercolor':
+        #     self._classes = ('__background__',"bicycle","bird","car","cat","dog","person")    
 
         self._class_to_ind = dict(zip(self.classes, xrange(self.num_classes)))
         print(self._class_to_ind)
