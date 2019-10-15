@@ -26,7 +26,7 @@ First of all, clone the code
 
 Then, create a folder:
 ```
-cd faster-rcnn.pytorch && mkdir data
+cd towards-universal-object-detection && mkdir data
 ```
 
 Then put all the donwloaded datasets from UODB benchmark inside data and unzip all of them.
