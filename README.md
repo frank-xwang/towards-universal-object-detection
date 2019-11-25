@@ -6,11 +6,12 @@ by Xudong Wang, Zhaowei Cai, Dashan Gao and Nuno Vasconcelos in UC San Diego and
 
 If you use our code/model/data, please cite our paper:
 
-    @article{wang2019towards,
-    title={Towards Universal Object Detection by Domain Attention},
-    author={Wang, Xudong and Cai, Zhaowei and Gao, Dashan and Vasconcelos, Nuno},
-    journal={arXiv preprint arXiv:1904.04402},
-    year={2019}
+    @inproceedings{wang2019towards,
+      title={Towards universal object detection by domain attention},
+      author={Wang, Xudong and Cai, Zhaowei and Gao, Dashan and Vasconcelos, Nuno},
+      booktitle={Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition},
+      pages={7289--7298},
+      year={2019}
     }
 
 ### Project Pages
