@@ -2,7 +2,7 @@
 
 by Xudong Wang, Zhaowei Cai, Dashan Gao and Nuno Vasconcelos in UC San Diego and 12 Sigma Technologies.
 
-This project is based on Pytorch reproducted Faster R-CNN by [jwyang](https://github.com/jwyang/faster-rcnn.pytorch)
+This project is based on Pytorch reproduced Faster R-CNN by [jwyang](https://github.com/jwyang/faster-rcnn.pytorch)
 
 ### Project Pages
 http://www.svcl.ucsd.edu/projects/universal-detection/
