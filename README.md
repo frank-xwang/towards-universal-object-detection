@@ -44,7 +44,7 @@ Download them and put them into the data/pretrained_model/.
 1. Create virtual envrionment and activate it:
 
 ```
-conda create -n uodb
+conda create -n uodb python=3.6 -y
 conda activate uodb
 ```
 
