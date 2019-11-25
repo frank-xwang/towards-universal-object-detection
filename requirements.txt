@@ -8,3 +8,4 @@ matplotlib
 pyyaml
 tensorboardX
 Pillow
+torchvision==0.2.0
