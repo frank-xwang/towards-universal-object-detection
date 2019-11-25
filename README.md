@@ -1,6 +1,6 @@
 # Towards Universal Object Detection by Domain Attention.
 
-by Xudong Wang, Zhaowei Cai, Dashan Gao and Nuno Vasconcelos in UC San Diego and 12 Sigma Technologies.[Paper](https://arxiv.org/pdf/1904.04402.pdf)
+by Xudong Wang, Zhaowei Cai, Dashan Gao and Nuno Vasconcelos in UC San Diego and 12 Sigma Technologies. [Paper](https://arxiv.org/pdf/1904.04402.pdf)
 
 ### Project Pages
 http://www.svcl.ucsd.edu/projects/universal-detection/
