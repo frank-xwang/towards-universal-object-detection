@@ -123,12 +123,10 @@ Specify the specific model session, checkepoch and checkpoint, e.g., SESSION=1, 
 Results and models:
 
   | GPU model  | Architecture | Architecture | Architecture | Architecture | Architecture | Architecture | Architecture |
-  | ------------- | ------------- |
-  | TitanX (Maxwell/Pascal) | sm_52 |
-  | GTX 960M | sm_50 |
-  | GTX 1080 (Ti) | sm_61 |
-  | Grid K520 (AWS g2.2xlarge) | sm_30 |
-  | Tesla K80 (AWS p2.xlarge) | sm_37 |
+  | ------------- | ------------- | ------------- | ------------- |------------- |------------- |------------- |------------- |
+  | TitanX (Maxwell/Pascal) | sm_52 |sm_52 |sm_52 |sm_52 |sm_52 |sm_52 |sm_52 |
+  | TitanX (Maxwell/Pascal) | sm_52 |sm_52 |sm_52 |sm_52 |sm_52 |sm_52 |sm_52 |
+  | TitanX (Maxwell/Pascal) | sm_52 |sm_52 |sm_52 |sm_52 |sm_52 |sm_52 |sm_52 |
 
 
 ### Citation
