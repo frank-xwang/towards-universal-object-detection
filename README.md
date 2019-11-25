@@ -120,6 +120,16 @@ python test_net.py --dataset pascal_voc --net da-50 \
 ```
 Specify the specific model session, checkepoch and checkpoint, e.g., SESSION=1, EPOCH=6, CHECKPOINT=416.
 
+Results and models:
+
+  | #Adapter  | KITTI | KITTI | KITTI | KITTI | KITTI | KITTI | KITTI | KITTI | KITTI | KITTI | KITTI | AVG | 
+  | ------------- | ------------- |
+  | TitanX (Maxwell/Pascal) | sm_52 |
+  | GTX 960M | sm_50 |
+  | GTX 1080 (Ti) | sm_61 |
+  | Grid K520 (AWS g2.2xlarge) | sm_30 |
+  | Tesla K80 (AWS p2.xlarge) | sm_37 |
+
 ### Citation
 
 If you use our code/model/data, please cite our paper:
