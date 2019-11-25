@@ -2,17 +2,7 @@
 
 by Xudong Wang, Zhaowei Cai, Dashan Gao and Nuno Vasconcelos in UC San Diego and 12 Sigma Technologies.
 
-### Citation
-
-If you use our code/model/data, please cite our paper:
-
-    @inproceedings{wang2019towards,
-      title={Towards universal object detection by domain attention},
-      author={Wang, Xudong and Cai, Zhaowei and Gao, Dashan and Vasconcelos, Nuno},
-      booktitle={Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition},
-      pages={7289--7298},
-      year={2019}
-    }
+[Paper link](https://arxiv.org/pdf/1904.04402.pdf)
 
 ### Project Pages
 http://www.svcl.ucsd.edu/projects/universal-detection/
@@ -119,3 +109,15 @@ python test_net.py --dataset pascal_voc --net da-50 \
                    --cuda
 ```
 Specify the specific model session, checkepoch and checkpoint, e.g., SESSION=1, EPOCH=6, CHECKPOINT=416.
+
+### Citation
+
+If you use our code/model/data, please cite our paper:
+
+    @inproceedings{wang2019towards,
+      title={Towards universal object detection by domain attention},
+      author={Wang, Xudong and Cai, Zhaowei and Gao, Dashan and Vasconcelos, Nuno},
+      booktitle={Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition},
+      pages={7289--7298},
+      year={2019}
+    }
