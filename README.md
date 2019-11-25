@@ -53,7 +53,13 @@ conda activate uodb
 pip install -r requirements.txt --user
 ```
 
-3. Compile the cuda dependencies using following simple commands:
+3. Install pytorch0.4.1 with conda:
+```
+conda install pytorch=0.4.1 cuda90 -c pytorch
+```
+Please change cuda version accordingly.
+
+4. Compile the cuda dependencies using following simple commands:
 
 ```
 cd lib
