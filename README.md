@@ -29,7 +29,7 @@ Then put all the donwloaded datasets from [UODB benchmark](http://www.svcl.ucsd.
 
 ### Pretrained Model
 
-You can download pre-trained models in ImageNet from: DA-50-5, DA-50-6, DA-50-8, DA-50-11 and ResNet50.
+You can download pre-trained models in ImageNet from:
 
 * DA-50-5: [Dropbox](https://www.dropbox.com/s/iev3tkbz5wyyuz9/resnet101_caffe.pth?dl=0)
 * DA-50-6: [Dropbox](https://www.dropbox.com/s/iev3tkbz5wyyuz9/resnet101_caffe.pth?dl=0)
