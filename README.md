@@ -24,7 +24,7 @@ Then put all the donwloaded datasets from [UODB benchmark](http://www.svcl.ucsd.
 ### prerequisites
 
 * Python 2.7 or 3.6
-* Pytorch 0.4.0 or Pytorch 0.4.1
+* Pytorch 0.4.0
 * CUDA 8.0 or higher
 
 ### Pretrained Model
@@ -53,9 +53,9 @@ conda activate uodb
 pip install -r requirements.txt --user
 ```
 
-3. Install pytorch0.4.1 with conda:
+3. Install pytorch0.4.0 with conda:
 ```
-conda install pytorch=0.4.1 cuda90 -c pytorch
+conda install pytorch=0.4.0 cuda90 -c pytorch
 ```
 Please change cuda version accordingly.
 
