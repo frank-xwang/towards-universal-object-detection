@@ -128,6 +128,10 @@ Results and models:
   | 8  | 68.0 | 82.4 | 51.3 | 87.6 | 90.0 | 47.0 | 56.3 | 53.4 | 53.4 | 55.8 | 60.6 | 64.2 | N/A |
   | 11 | 68.1 | 82.0 | 51.6 | 88.3 | 90.1 | 46.5 | 57.0 | 57.3 | 50.7 | 53.1 | 58.4 | 63.8 | N/A |
 
+### Some popular problems
+1. fatal error: cuda.h: No such file or directory:
+add export C_INCLUDE_PATH=/usr/local/cuda-8.0/include:${C_INCLUDE_PATH}
+before run "sh make.sh"
 
 ### Citation
 
