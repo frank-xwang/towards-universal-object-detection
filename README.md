@@ -55,7 +55,7 @@ pip install -r requirements.txt --user
 
 3. Install pytorch0.4.0 with conda:
 ```
-conda install pytorch=0.4.0 cuda90 -c pytorch
+conda install pytorch=0.4.0 cuda80 -c pytorch
 ```
 Please change cuda version accordingly.
 
