@@ -130,7 +130,8 @@ Results and models:
 
 ### Some popular problems
 1. fatal error: cuda.h: No such file or directory:
-add export C_INCLUDE_PATH=/usr/local/cuda-8.0/include:${C_INCLUDE_PATH}
+
+Add export C_INCLUDE_PATH=/usr/local/cuda-8.0/include:${C_INCLUDE_PATH}
 before run "sh make.sh"
 
 ### Citation
