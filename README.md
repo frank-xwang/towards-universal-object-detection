@@ -122,7 +122,7 @@ Specify the specific model session, checkepoch and checkpoint, e.g., SESSION=1, 
 
 Results and models:
 
-  | GPU model  | Architecture |
+  | GPU model  | Architecture | Architecture | Architecture | Architecture | Architecture | Architecture | Architecture |
   | ------------- | ------------- |
   | TitanX (Maxwell/Pascal) | sm_52 |
   | GTX 960M | sm_50 |
