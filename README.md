@@ -2,26 +2,15 @@
 
 by Xudong Wang, Zhaowei Cai, Dashan Gao and Nuno Vasconcelos in UC San Diego and 12 Sigma Technologies.
 
-### Citation
-
-If you use our code/model/data, please cite our paper:
-
-    @inproceedings{wang2019towards,
-      title={Towards universal object detection by domain attention},
-      author={Wang, Xudong and Cai, Zhaowei and Gao, Dashan and Vasconcelos, Nuno},
-      booktitle={Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition},
-      pages={7289--7298},
-      year={2019}
-    }
+This project is based on Pytorch reproduced Faster R-CNN by [jwyang](https://github.com/jwyang/faster-rcnn.pytorch)
 
 ### Project Pages
 http://www.svcl.ucsd.edu/projects/universal-detection/
 
 ### Introduction
-This is the benchmark introduced in CVPR 2019 paper: Towards Universal Object Detection by Domain Attention. The goal of this benchmark is to encourage designing universal object detection system, capble of solving various detection tasks. To train and evaluate universal/multi-domain object detection systems, we established a new universal object detection benchmark (UODB) of 11 datasets. Details of UODB can be obtained from project pages. You can also download these datasets in that project page.
+This is the benchmark introduced in CVPR 2019 paper: [Towards Universal Object Detection by Domain Attention](https://arxiv.org/pdf/1904.04402.pdf). The goal of this benchmark is to encourage designing universal object detection system, capble of solving various detection tasks. To train and evaluate universal/multi-domain object detection systems, we established a new universal object detection benchmark (UODB) of 11 datasets. Details of UODB can be obtained from project pages. You can also download these datasets in that project page.
 
-### Preparation
-
+### Datasets Preparation
 
 First of all, clone the code
 
@@ -30,7 +19,7 @@ Then, create a folder:
 cd towards-universal-object-detection && mkdir data
 ```
 
-Then put all the donwloaded datasets from UODB benchmark inside data and unzip all of them.
+Then put all the donwloaded datasets from [UODB benchmark](http://www.svcl.ucsd.edu/projects/universal-detection/) inside data folder and unzip all of them.
 
 ### prerequisites
 
@@ -40,17 +29,15 @@ Then put all the donwloaded datasets from UODB benchmark inside data and unzip a
 
 ### Pretrained Model
 
-We used two pretrained models in our experiments, da-50 and ResNet50. You can download these two models from:
+You can download pre-trained models in ImageNet from:
 
-* SE-Resnet-50: [Dropbox](https://www.dropbox.com/s/s3brpk0bdq60nyb/vgg16_caffe.pth?dl=0), [VT Server](https://filebox.ece.vt.edu/~jw2yang/faster-rcnn/pretrained-base-models/vgg16_caffe.pth)
-
-* ResNet-50: [Dropbox](https://www.dropbox.com/s/iev3tkbz5wyyuz9/resnet101_caffe.pth?dl=0), [VT Server](https://filebox.ece.vt.edu/~jw2yang/faster-rcnn/pretrained-base-models/resnet101_caffe.pth)
+* DA-50-5: [Dropbox](https://www.dropbox.com/s/iev3tkbz5wyyuz9/resnet101_caffe.pth?dl=0)
+* DA-50-6: [Dropbox](https://www.dropbox.com/s/iev3tkbz5wyyuz9/resnet101_caffe.pth?dl=0)
+* DA-50-8: [Dropbox](https://www.dropbox.com/s/iev3tkbz5wyyuz9/resnet101_caffe.pth?dl=0)
+* DA-50-11: [Dropbox](https://www.dropbox.com/s/iev3tkbz5wyyuz9/resnet101_caffe.pth?dl=0)
+* ResNet50: [Dropbox](https://www.dropbox.com/s/iev3tkbz5wyyuz9/resnet101_caffe.pth?dl=0)
 
 Download them and put them into the data/pretrained_model/.
-
-**NOTE**. We compare the pretrained models from Pytorch and Caffe, and surprisingly find Caffe pretrained models have slightly better performance than Pytorch pretrained. We would suggest to use Caffe pretrained models from the above link to reproduce our results.
-
-**If you want to use pytorch pre-trained models, please remember to transpose images from BGR to RGB, and also use the same data transformer (minus mean and normalize) as used in pretrained model.**
 
 ### Compilation
 
@@ -66,12 +53,19 @@ As pointed out by [ruotianluo/pytorch-faster-rcnn](https://github.com/ruotianluo
 
 More details about setting the architecture can be found [here](https://developer.nvidia.com/cuda-gpus) or [here](http://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/)
 
-Install all the python dependencies using pip:
+1. Create virtual envrionment and activate it:
+
 ```
-pip install -r requirements.txt
+conda create -n uodb
+conda activate uodb
 ```
 
-Compile the cuda dependencies using following simple commands:
+2. Install all the python dependencies using pip:
+```
+pip install -r requirements.txt --user
+```
+
+3. Compile the cuda dependencies using following simple commands:
 
 ```
 cd lib
@@ -119,3 +113,15 @@ python test_net.py --dataset pascal_voc --net da-50 \
                    --cuda
 ```
 Specify the specific model session, checkepoch and checkpoint, e.g., SESSION=1, EPOCH=6, CHECKPOINT=416.
+
+### Citation
+
+If you use our code/model/data, please cite our paper:
+
+    @inproceedings{wang2019towards,
+      title={Towards universal object detection by domain attention},
+      author={Wang, Xudong and Cai, Zhaowei and Gao, Dashan and Vasconcelos, Nuno},
+      booktitle={Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition},
+      pages={7289--7298},
+      year={2019}
+    }
