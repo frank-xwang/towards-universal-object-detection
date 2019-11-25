@@ -10,7 +10,7 @@ http://www.svcl.ucsd.edu/projects/universal-detection/
 ### Introduction
 This is the benchmark introduced in CVPR 2019 paper: [Towards Universal Object Detection by Domain Attention](https://arxiv.org/pdf/1904.04402.pdf). The goal of this benchmark is to encourage designing universal object detection system, capble of solving various detection tasks. To train and evaluate universal/multi-domain object detection systems, we established a new universal object detection benchmark (UODB) of 11 datasets. Details of UODB can be obtained from project pages. You can also download these datasets in that project page.
 
-### Preparation
+### Datasets Preparation
 
 First of all, clone the code
 
