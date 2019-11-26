@@ -121,6 +121,8 @@ bash scripts/test_universal.sh
 ```
 Specify the specific GPU device ID(GPU_ID), network(net), data directory(DATA_DIR), number of adapters(num_adapters), model session(SESSION), checkepoch(EPOCH), checkpoint iterations(CHECKPOINT), datasets to test(datasets) and etc. before running test_universal.sh file. Only sigle GPU testing is supported.
 
+Pre-trained model will be named as faster_rcnn_universal_SESSION_EPOCH_CHECKPOINT.pth
+
 Results and models:
 
   | #Adapter | less_blocks | KITTI | VOC | Widerface | LISA | Kitchen | COCO | DOTA | DeepLesion | Comic | Clipart | Watercolor | AVG | Model |
