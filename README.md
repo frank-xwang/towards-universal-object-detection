@@ -121,13 +121,13 @@ bash scripts/test_universal.sh
 ```
 Specify the specific GPU device ID(GPU_ID), network(net), data directory(DATA_DIR), number of adapters(num_adapters), model session(SESSION), checkepoch(EPOCH), checkpoint iterations(CHECKPOINT), datasets to test(datasets) and etc. before running test_universal.sh file. Only sigle GPU testing is supported.
 
+Pre-trained model will be named as faster_rcnn_universal_SESSION_EPOCH_CHECKPOINT.pth
+
 Results and models:
 
-  | #Adapter  | KITTI | VOC | Widerface | LISA | Kitchen | COCO | DOTA | DeepLesion | Comic | Clipart | Watercolor | AVG | Model |
-  | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- |
-  | 6  | 67.6 | 82.7 | 51.8 | 87.9 | 88.7 | 46.8 | 57.0 | 54.8 | 52.6 | 54.6 | 58.2 | 63.9 | N/A |
-  | 8  | 68.0 | 82.4 | 51.3 | 87.6 | 90.0 | 47.0 | 56.3 | 53.4 | 53.4 | 55.8 | 60.6 | 64.2 | N/A |
-  | 11 | 68.1 | 82.0 | 51.6 | 88.3 | 90.1 | 46.5 | 57.0 | 57.3 | 50.7 | 53.1 | 58.4 | 63.8 | N/A |
+  | #Adapter | less_blocks | KITTI | VOC | Widerface | LISA | Kitchen | COCO | DOTA | DeepLesion | Comic | Clipart | Watercolor | AVG | Model |
+  | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- |
+  | 11 | False  | 68.1 | 82.0 | 51.6 | 88.3 | 90.1 | 46.5 | 57.0 | 57.3 | 50.7 | 53.1 | 58.4 | 63.8 | [model](https://drive.google.com/file/d/1zh-WguXt3b1IKjfeyFWIOqOxLFflbghL/view?usp=sharing) |
 
 ### Some popular problems
 1. fatal error: cuda.h: No such file or directory:
