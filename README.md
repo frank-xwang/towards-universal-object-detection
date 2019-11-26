@@ -55,8 +55,9 @@ pip install -r requirements.txt --user
 
 3. Install pytorch0.4.0 with conda:
 ```
-export PATH=/usr/local/cuda-9.0/bin${PATH:+:${PATH}}
-export LIBRARY_PATH=/usr/local/cuda-9.0/lib64:$LIBRARY_PATH
+#export C_INCLUDE_PATH=/usr/local/cuda-9.0/include:${C_INCLUDE_PATH}
+#export PATH=/usr/local/cuda-9.0/bin${PATH:+:${PATH}}
+#export LIBRARY_PATH=/usr/local/cuda-9.0/lib64:$LIBRARY_PATH
 conda install pytorch=0.4.0 cuda90 cudatoolkit==9.0 -c pytorch
 ```
 Please change cuda version accordingly.
