@@ -139,6 +139,10 @@ Results and models:
 2. RuntimeError: CUDNN_STATUS_EXECUTION_FAILED:
     
     Usually, this is caused by using different cudnn when building and running pytorch. You can check this simply by running: torch.backends.cudnn.version(). You can also test by checking if the output of "pytorch.version.cuda" and "nvcc --version" gives you the same cudnn version. If the above checks fail, you need to reinstall pytorch and make sure to use the same cudnn within the inference time.
+    
+3. THCudaCheck FAIL file=/opt/conda/conda-bld/pytorch_1524586445097/work/aten/src/THC/THCGeneral.cpp line=844 error=11 : invalid argument
+
+    This error is solved in latest pytorch, update pytorch could solve it. This error will not have influence during inference and training time for pytorch0.4.0, we can simly ignore it. Check [this](https://github.com/pytorch/pytorch/issues/21154) for details.
 
 ### Citation
 
