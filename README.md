@@ -139,20 +139,7 @@ Results and models:
 
 2. RuntimeError: CUDNN_STATUS_EXECUTION_FAILED:
     
-    Check whetehr your cudnn version for building pytorch and running code is the same by:
-    torch.backends.cudnn.version()
-    
-    or check wehther 
-    
-    pytorch.version.cuda
-    
-    and
-    
-    nvcc --version
-    
-    match each other
-    
-    If this fails, you need to make sure you are using the same cudnn when you are building and running pytorch.
+    Usually, this is caused by using different cudnn when building and running pytorch. You can check this simply by running: torch.backends.cudnn.version(). You can also test by checking if the output of "pytorch.version.cuda" and "nvcc --version" gives you the same cudnn version. If the above checks fail, you need to reinstall pytorch and make sure to use the same cudnn within the inference time.
 
 ### Citation
 
