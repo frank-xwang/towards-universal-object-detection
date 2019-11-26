@@ -110,8 +110,8 @@ def parse_args():
   parser.add_argument('--DATA_DIR', dest='DATA_DIR',
                       help='path to DATA_DIR',
                       default="/home/xuw080/data4/universal_model/data/", type=str)
-  parser.add_argument('--num_se', dest='num_se',
-                      help='Number of se layers adapter',
+  parser.add_argument('--num_adapters', dest='num_adapters',
+                      help='Number of adapters',
                       default=0, type=int)
   parser.add_argument('--less_blocks', dest='less_blocks',
                       help='Whether use less blocks',
@@ -412,7 +412,7 @@ if __name__ == '__main__':
   cfg.finetuneBN_linear = args.finetuneBN_linear == 1
   cfg.fa_conv_num = args.fa_conv_num
   cfg.DATA_DIR = args.DATA_DIR
-  cfg.num_se = args.num_se
+  cfg.num_adapters = args.num_adapters
   cfg.less_blocks = args.less_blocks == 'True'
 
   cfg.fix_bn = args.fix_bn == "True"

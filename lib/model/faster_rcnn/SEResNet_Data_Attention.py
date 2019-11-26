@@ -347,7 +347,7 @@ class Datasets_Attention(_fasterRCNN):
             if current in resnet.state_dict():
               new_state_dict[current] = v
         elif '.se.' in k:
-          for n in range(cfg.num_se):
+          for n in range(cfg.num_adapters):
             current = se_name + str(n) + '.' + k_list[-3] + '.' + k_list[-2] + '.' + k_list[-1]
             #print('se: ',current)
             if current in resnet.state_dict():

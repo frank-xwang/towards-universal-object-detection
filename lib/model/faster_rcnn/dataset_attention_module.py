@@ -11,11 +11,11 @@ class DatasetsAttention(nn.Module):
     def __init__(self, planes, reduction=16, se_loss=False, nclass_list=None, fixed_block=False):
         super(DatasetsAttention, self).__init__()
         self.planes = planes
-        num_se = cfg.num_se
-        if num_se == 0:
+        num_adapters = cfg.num_adapters
+        if num_adapters == 0:
             self.n_datasets = len(nclass_list)
         else:
-            self.n_datasets = num_se
+            self.n_datasets = num_adapters
         self.fixed_block = fixed_block
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
         if not self.fixed_block and cfg.less_blocks:
@@ -25,12 +25,12 @@ class DatasetsAttention(nn.Module):
             else:
                 if cfg.layer_index % 2 != 0:
                     self.fixed_block = True
-        if self.fixed_block or num_se == 1:
+        if self.fixed_block or num_adapters == 1:
             self.SE_Layers = nn.ModuleList([SELayer(planes, reduction, se_loss=se_loss, nclass=num_class, with_sigmoid=False) for num_class in range(1)])
-        elif num_se == 0:
+        elif num_adapters == 0:
             self.SE_Layers = nn.ModuleList([SELayer(planes, reduction, se_loss=se_loss, nclass=num_class, with_sigmoid=False) for num_class in nclass_list])
         else:
-            self.SE_Layers = nn.ModuleList([SELayer(planes, reduction, se_loss=se_loss, nclass=num_class, with_sigmoid=False) for num_class in range(num_se)])
+            self.SE_Layers = nn.ModuleList([SELayer(planes, reduction, se_loss=se_loss, nclass=num_class, with_sigmoid=False) for num_class in range(num_adapters)])
         self.fc_1 = nn.Linear(planes, self.n_datasets)
         self.sigmoid = nn.Sigmoid()
         self.softmax = nn.Softmax(dim=1)

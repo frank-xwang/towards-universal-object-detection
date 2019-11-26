@@ -74,15 +74,9 @@ def parse_args():
     parser.add_argument('--backward_together', dest='backward_together',
                         help='whether use original backward method, will update optimizer every datasets is finished if choose False',
                         default=10000, type=int)                    
-
     parser.add_argument('--save_dir', dest='save_dir',
-<<<<<<< HEAD
                         help='directory to save models', default="models",
-=======
-                        help='directory to save models', default="/home/Xwang/HeadNode-1/universal_model_/models",
->>>>>>> 793eeda709a4483589939795954491531204c768
                         nargs=argparse.REMAINDER)
-
     parser.add_argument('--nw', dest='num_workers',
                         help='number of worker to load data',
                         default=0, type=int)
@@ -143,11 +137,7 @@ def parse_args():
                         default=1, type=int)  
     parser.add_argument('--DATA_DIR', dest='DATA_DIR',
                         help='path to DATA_DIR',
-<<<<<<< HEAD
                         default="data/", type=str)      
-=======
-                        default="/home/xuw080/data4/universal_model/data/", type=str)      
->>>>>>> 793eeda709a4483589939795954491531204c768
     parser.add_argument('--random_resize', dest='random_resize',
                         help='whether randomly resize images',
                         default="False", type=str)       
@@ -169,7 +159,7 @@ def parse_args():
     parser.add_argument('--less_blocks', dest='less_blocks',
                         help='Whether use less blocks',
                         default='False', type=str)
-    parser.add_argument('--num_se', dest='num_se',
+    parser.add_argument('--num_adapters', dest='num_adapters',
                         help='Number of se layers adapter',
                         default=0, type=int)    
     parser.add_argument('--rpn_univ', dest='rpn_univ',
@@ -270,15 +260,6 @@ if __name__ == '__main__':
     args.cfg_file = "cfgs/{}_ls.yml".format(args.net) if args.large_scale else "cfgs/{}.yml".format(args.net)
     cfg.sample_mode = 'random'
     cfg.filter_empty = True
-<<<<<<< HEAD
-
-=======
-    cfg.ignore_people = False
-
-    cfg.Only_FinetuneBN = False
-    cfg.reinit_rpn = False
-    cfg.nums = 0
->>>>>>> 793eeda709a4483589939795954491531204c768
 
     if args.cfg_file is not None:
         cfg_from_file(args.cfg_file)
@@ -300,19 +281,15 @@ if __name__ == '__main__':
     
     cfg.less_blocks = args.less_blocks == 'True'
     if cfg.less_blocks: print('INFO: Using less blocks')
-    cfg.num_se = args.num_se
-    print("INFO: number of se adapter is: ", cfg.num_se)
+    cfg.num_adapters = args.num_adapters
+    print("INFO: number of se adapter is: ", cfg.num_adapters)
 
     cfg.mode = 'universal'
     
     if args.update_chosen:
         print('INFO: Update chosen layers')
 
-<<<<<<< HEAD
     torch.backends.cudnn.benchmark = True
-=======
-    #torch.backends.cudnn.benchmark = True
->>>>>>> 793eeda709a4483589939795954491531204c768
     if torch.cuda.is_available() and not args.cuda:
         print("WARNING: You have a CUDA device, so you should probably run with --cuda")
 
@@ -340,20 +317,11 @@ if __name__ == '__main__':
         cfg.TRAIN.SCALES= cfg.train_scales_list[i]
         cfg.MAX_NUM_GT_BOXES = cfg.MAX_NUM_GT_BOXES_LIST[i]
         cfg.TRAIN.USE_FLIPPED = args.USE_FLIPPED == 1
-<<<<<<< HEAD
         # Deeplesion will not flip as in https://arxiv.org/pdf/1711.10535.pdf
         if 'deeplesion' == cfg.dataset: 
             cfg.TRAIN.USE_FLIPPED = cfg.filp_image[i]
         cfg.ANCHOR_SCALES = cfg.ANCHOR_SCALES_LIST[i]
         cfg.ANCHOR_RATIOS = cfg.ANCHOR_RATIOS_LIST[i]
-=======
-        if 'deeplesion' == cfg.dataset:
-            cfg.TRAIN.USE_FLIPPED = cfg.filp_image[i]
-        index = i
-        #index = 0 # Nedd to be deleted if not for universal detectors experiments
-        cfg.ANCHOR_SCALES = cfg.ANCHOR_SCALES_LIST[index] 
-        cfg.ANCHOR_RATIOS = cfg.ANCHOR_RATIOS_LIST[index]
->>>>>>> 793eeda709a4483589939795954491531204c768
         
         print('loading datasets:',args.imdb_name)
 
@@ -363,10 +331,6 @@ if __name__ == '__main__':
 
         train_size = len(roidb)
 
-<<<<<<< HEAD
-=======
-        print('{:d} roidb entries'.format(len(roidb)))
->>>>>>> 793eeda709a4483589939795954491531204c768
 
         output_dir = args.save_dir + "/" + args.net + "/universal"
         if not os.path.exists(output_dir):
