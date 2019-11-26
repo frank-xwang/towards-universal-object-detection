@@ -55,7 +55,9 @@ pip install -r requirements.txt --user
 
 3. Install pytorch0.4.0 with conda:
 ```
-conda install pytorch=0.4.0 cuda80 -c pytorch
+export PATH=/usr/local/cuda-9.0/bin${PATH:+:${PATH}}
+export LIBRARY_PATH=/usr/local/cuda-9.0/lib64:$LIBRARY_PATH
+conda install pytorch=0.4.0 cuda90 cudatoolkit==9.0 -c pytorch
 ```
 Please change cuda version accordingly.
 
@@ -131,8 +133,14 @@ Results and models:
 ### Some popular problems
 1. fatal error: cuda.h: No such file or directory:
 
-Add export C_INCLUDE_PATH=/usr/local/cuda-8.0/include:${C_INCLUDE_PATH}
-before run "sh make.sh"
+    Add export C_INCLUDE_PATH=/usr/local/cuda-8.0/include:${C_INCLUDE_PATH}
+    before run "sh make.sh"
+
+2. RuntimeError: CUDNN_STATUS_EXECUTION_FAILED:
+    check whetehr your cuda version for building pytorch and cuda version in your current running environment is correct by:
+    torch.backends.cudnn.version()
+    
+    If this fails, you need to make sure you are using the same cuda when you are building and running pytorch.
 
 ### Citation
 
