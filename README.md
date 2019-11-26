@@ -133,14 +133,25 @@ Results and models:
 ### Some popular problems
 1. fatal error: cuda.h: No such file or directory:
 
-    Add export C_INCLUDE_PATH=/usr/local/cuda-8.0/include:${C_INCLUDE_PATH}
+    Add export C_INCLUDE_PATH=/usr/local/cuda-9.0/include:${C_INCLUDE_PATH}
     before run "sh make.sh"
 
 2. RuntimeError: CUDNN_STATUS_EXECUTION_FAILED:
-    check whetehr your cuda version for building pytorch and cuda version in your current running environment is correct by:
+    
+    Check whetehr your cudnn version for building pytorch and running code is the same by:
     torch.backends.cudnn.version()
     
-    If this fails, you need to make sure you are using the same cuda when you are building and running pytorch.
+    or check wehther 
+    
+    pytorch.version.cuda
+    
+    and
+    
+    nvcc --version
+    
+    match each other
+    
+    If this fails, you need to make sure you are using the same cudnn when you are building and running pytorch.
 
 ### Citation
 
