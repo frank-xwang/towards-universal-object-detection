@@ -55,9 +55,6 @@ pip install -r requirements.txt --user
 
 3. Install pytorch0.4.0 with conda:
 ```
-export C_INCLUDE_PATH=/usr/local/cuda-9.0/include:${C_INCLUDE_PATH}
-export PATH=/usr/local/cuda-9.0/bin${PATH:+:${PATH}}
-export LIBRARY_PATH=/usr/local/cuda-9.0/lib64:$LIBRARY_PATH
 conda install pytorch=0.4.0 cuda90 cudatoolkit==9.0 -c pytorch
 ```
 Please change cuda version accordingly.
@@ -141,6 +138,8 @@ Results and models:
 3. THCudaCheck FAIL file=/opt/conda/conda-bld/pytorch_1524586445097/work/aten/src/THC/THCGeneral.cpp line=844 error=11 : invalid argument
 
     This error will appear for RTX2080 GPU cards with cuda9.x. This error will not have influence during inference and training time for pytorch0.4.0, we can simly ignore it. Check [issue](https://github.com/pytorch/pytorch/issues/21154) and [issue](https://discuss.pytorch.org/t/thcudacheck-fail-file-pytorch-aten-src-thc-thcgeneral-cpp/31788/13) for details.
+
+If you meet any problems, please feel free to contact me by: frank.xudongwang@gmail.com
 
 ### Citation
 
