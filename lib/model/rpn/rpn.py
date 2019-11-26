@@ -66,7 +66,11 @@ class _RPN(nn.Module):
         rpn_cls_score = self.RPN_cls_score(rpn_conv1)
 
         rpn_cls_score_reshape = self.reshape(rpn_cls_score, 2)
+<<<<<<< HEAD
         rpn_cls_prob_reshape = F.softmax(rpn_cls_score_reshape, dim=1)
+=======
+        rpn_cls_prob_reshape = F.softmax(rpn_cls_score_reshape)
+>>>>>>> 793eeda709a4483589939795954491531204c768
         rpn_cls_prob = self.reshape(rpn_cls_prob_reshape, self.nc_score_out)
 
         # get rpn offsets to the anchor boxes

@@ -29,7 +29,11 @@ datasets=watercolor
 
 fix_bn=True
 USE_FLIPPED=True
+<<<<<<< HEAD
 DATA_DIR=data
+=======
+DATA_DIR=/home/Xwang/HeadNode-1/universal_model_/data
+>>>>>>> 793eeda709a4483589939795954491531204c768
 warmup_steps=0
 
 CUDA_VISIBLE_DEVICES=${GPU_ID} python trainval_net.py \

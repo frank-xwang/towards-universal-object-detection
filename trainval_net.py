@@ -59,7 +59,11 @@ def parse_args():
                       default=10000, type=int)
 
   parser.add_argument('--save_dir', dest='save_dir',
+<<<<<<< HEAD
                       help='directory to save models', default="models",
+=======
+                      help='directory to save models', default="/home/Xwang/HeadNode-1/universal_model_/models",
+>>>>>>> 793eeda709a4483589939795954491531204c768
                       nargs=argparse.REMAINDER)
   parser.add_argument('--nw', dest='num_workers',
                       help='number of worker to load data',
@@ -184,6 +188,10 @@ if __name__ == '__main__':
   cfg.sample_mode = 'random'
   cfg.DEBUG = False # set as True if debug whether 'people' is ignored
   cfg.filter_empty = True
+<<<<<<< HEAD
+=======
+  cfg.ignore_people = False
+>>>>>>> 793eeda709a4483589939795954491531204c768
   cfg.use_coco_igonore = True
   cfg.random_resize = False
 
@@ -271,6 +279,10 @@ if __name__ == '__main__':
       cfg.TRAIN.SCALES=(720,)
       cfg.sample_mode = 'bootstrap' # use bootstrap or ramdom as sampling method
       cfg.TRAIN.USE_ALL_GT = True # choose true if want to exclude all proposals overlap with 'people' larger than 0.3
+<<<<<<< HEAD
+=======
+      cfg.ignore_people = False # ignore people, all proposals overlap with 'people' larger than 0.3 will be igonored
+>>>>>>> 793eeda709a4483589939795954491531204c768
       cfg.use_coco_igonore = True
       cfg.filter_empty = True # whether filter 0 gt images
       cfg.DEBUG = False # set as True if debug whether 'people' is ignored
@@ -399,6 +411,10 @@ if __name__ == '__main__':
       cfg.TRAIN.SCALES=(800,)
       cfg.sample_mode = 'bootstrap' # use bootstrap or ramdom as sampling method
       cfg.TRAIN.USE_ALL_GT = True # choose true if want to exclude all proposals overlap with 'people' larger than 0.3
+<<<<<<< HEAD
+=======
+      cfg.ignore_people = False # ignore people, all proposals overlap with 'people' larger than 0.3 will be igonored
+>>>>>>> 793eeda709a4483589939795954491531204c768
       cfg.filter_empty = False # whether filter 0 gt images
       cfg.DEBUG = False # set as True if debug whether 'people' is ignored
       ## scales*11 is the new_width, new_width*ratio is new height
@@ -462,6 +478,12 @@ if __name__ == '__main__':
   print('Using config:')
   pprint.pprint(cfg)
   np.random.seed(cfg.RNG_SEED)
+<<<<<<< HEAD
+=======
+  cfg.Only_FinetuneBN = False
+  cfg.reinit_rpn = False
+  cfg.nums = 0
+>>>>>>> 793eeda709a4483589939795954491531204c768
   cfg.bnn = 0
 
   cfg.fix_bn = args.fix_bn == "True"
@@ -481,6 +503,11 @@ if __name__ == '__main__':
   imdb, roidb, ratio_list, ratio_index = combined_roidb(args.imdb_name)
   train_size = len(roidb)
 
+<<<<<<< HEAD
+=======
+  print('{:d} roidb entries'.format(len(roidb)))
+
+>>>>>>> 793eeda709a4483589939795954491531204c768
   output_dir = args.save_dir + "/" + args.net + "/" + args.dataset
   if not os.path.exists(output_dir):
     os.makedirs(output_dir)
