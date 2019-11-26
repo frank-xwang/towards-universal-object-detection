@@ -34,9 +34,8 @@ def conv3x3(in_planes, out_planes, stride=1):
 class SEBasicBlock(nn.Module):
   expansion = 1
 
-  def __init__(self, inplanes, planes, stride=1, downsample=None, se_loss=False, fixed_block=False):
+  def __init__(self, inplanes, planes, stride=1, downsample=None, fixed_block=False):
     super(SEBasicBlock, self).__init__()
-    self.se_loss = se_loss
     self.conv1 = conv3x3(inplanes, planes, stride)
     if cfg.use_mux: self.bn1 = nn.ModuleList([nn.BatchNorm2d(planes) for datasets in cfg.num_classes])
     else: self.bn1 = nn.BatchNorm2d(planes)
@@ -44,7 +43,7 @@ class SEBasicBlock(nn.Module):
     self.conv2 = conv3x3(planes, planes)
     if cfg.use_mux: self.bn2 = nn.ModuleList([nn.BatchNorm2d(planes) for datasets in cfg.num_classes])
     else: self.bn2 = nn.BatchNorm2d(planes)
-    self.datasets_attention = DatasetsAttention(planes, reduction=16, se_loss=se_loss, nclass_list=cfg.num_classes, fixed_block=fixed_block)
+    self.datasets_attention = DatasetsAttention(planes, reduction=16, nclass_list=cfg.num_classes, fixed_block=fixed_block)
     self.downsample = downsample
     self.stride = stride
 
@@ -60,25 +59,20 @@ class SEBasicBlock(nn.Module):
     if cfg.use_mux: out = self.bn2[cfg.cls_ind](out)
     else: out = self.bn2(out)
 
-    if self.se_loss:
-      out, SE_PRED = self.datasets_attention(out)
-    else:
-      out = self.datasets_attention(out)
+    out = self.datasets_attention(out)
 
     if self.downsample is not None:
       residual = self.downsample(x)
 
     out += residual
     out = self.relu(out)
-    if self.se_loss: return out, SE_PRED
     return out
 
 class SEBottleneck(nn.Module):
   expansion = 4
 
-  def __init__(self, inplanes, planes, stride=1, downsample=None, se_loss=False, fixed_block=False):
+  def __init__(self, inplanes, planes, stride=1, downsample=None, fixed_block=False):
     super(SEBottleneck, self).__init__()
-    self.se_loss = se_loss
     self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=1, bias=False)
     if cfg.use_mux: self.bn1 = nn.ModuleList([nn.BatchNorm2d(planes) for datasets in cfg.num_classes])
     else: self.bn1 = nn.BatchNorm2d(planes)
@@ -89,7 +83,7 @@ class SEBottleneck(nn.Module):
     self.conv3 = nn.Conv2d(planes, planes * 4, kernel_size=1, bias=False)
     if cfg.use_mux: self.bn3 = nn.ModuleList([nn.BatchNorm2d(planes * 4) for datasets in cfg.num_classes])
     else: self.bn3 = nn.BatchNorm2d(planes * 4)
-    self.datasets_attention = DatasetsAttention(planes * 4, reduction=16, se_loss=se_loss, nclass_list=cfg.num_classes, fixed_block=fixed_block)
+    self.datasets_attention = DatasetsAttention(planes * 4, reduction=16, nclass_list=cfg.num_classes, fixed_block=fixed_block)
     self.relu = nn.ReLU(inplace=True)
     self.downsample = downsample
     self.stride = stride
@@ -111,17 +105,13 @@ class SEBottleneck(nn.Module):
     if cfg.use_mux: out = self.bn3[cfg.cls_ind](out)
     else: out = self.bn3(out)
 
-    if self.se_loss:
-      out, SE_PRED = self.datasets_attention(out)
-    else:
-      out = self.datasets_attention(out)
+    out = self.datasets_attention(out)
 
     if self.downsample is not None:
       residual = self.downsample(x)
 
     out += residual
     out = self.relu(out)
-    if self.se_loss: return out, SE_PRED
     return out
 
 class BnMux(nn.Module):
@@ -136,11 +126,10 @@ class BnMux(nn.Module):
         return out
         
 class DataAttentionResNet(nn.Module):
-  def __init__(self, block, layers, num_classes=1000, se_loss=False):
+  def __init__(self, block, layers, num_classes=1000):
     self.inplanes = 64
     fixed_block = False
     super(DataAttentionResNet, self).__init__()
-    self.se_loss = se_loss
     self.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3,
                  bias=False)                                        # rcnn.base.0
     self.bn1 = nn.BatchNorm2d(64)                                   # rcnn.base.1
@@ -152,28 +141,28 @@ class DataAttentionResNet(nn.Module):
       cfg.start_fix = True
       cfg.layer_index = 0
       cfg.block_id = 1
-    self.layer1 = self._make_layer(block, 64, layers[0], se_loss=False, fixed_block=fixed_block)              # rcnn.base.4
+    self.layer1 = self._make_layer(block, 64, layers[0], fixed_block=fixed_block)              # rcnn.base.4
     fixed_block = False
     if cfg.RESNET.FIXED_BLOCKS >= 2: fixed_block = True
     else: 
       cfg.start_fix = True
       cfg.layer_index = 0
       cfg.block_id = 2
-    self.layer2 = self._make_layer(block, 128, layers[1], stride=2, se_loss=se_loss, fixed_block=fixed_block) # rcnn.base.5
+    self.layer2 = self._make_layer(block, 128, layers[1], stride=2, fixed_block=fixed_block) # rcnn.base.5
     fixed_block = False
     if cfg.RESNET.FIXED_BLOCKS >= 3: fixed_block = True
     else:
       cfg.start_fix = True
       cfg.layer_index = 0
       cfg.block_id = 3
-    self.layer3 = self._make_layer(block, 256, layers[2], stride=2, se_loss=se_loss, fixed_block=fixed_block) # rcnn.base.6
+    self.layer3 = self._make_layer(block, 256, layers[2], stride=2, fixed_block=fixed_block) # rcnn.base.6
     fixed_block = False
     if cfg.RESNET.FIXED_BLOCKS >= 4: fixed_block = True
     else: 
       cfg.start_fix = True
       cfg.layer_index = 0
       cfg.block_id = 4
-    self.layer4 = self._make_layer(block, 512, layers[3], stride=2, se_loss=False, fixed_block=fixed_block)   # rcnn.top
+    self.layer4 = self._make_layer(block, 512, layers[3], stride=2, fixed_block=fixed_block)   # rcnn.top
     fixed_block = False
     # it is slightly better whereas slower to set stride = 1
     # self.layer4 = self._make_layer(block, 512, layers[3], stride=1)
@@ -190,7 +179,7 @@ class DataAttentionResNet(nn.Module):
         m.weight.data.fill_(1)
         m.bias.data.zero_()
 
-  def _make_layer(self, block, planes, blocks, stride=1, se_loss=False, fixed_block=False):
+  def _make_layer(self, block, planes, blocks, stride=1, fixed_block=False):
     downsample = None
     if stride != 1 or self.inplanes != planes * block.expansion:
       if cfg.use_mux:
@@ -214,9 +203,9 @@ class DataAttentionResNet(nn.Module):
     self.inplanes = planes * block.expansion
     for i in range(1, blocks):
       if i == blocks - 1:
-        layers.append(block(self.inplanes, planes, se_loss=se_loss,fixed_block=fixed_block))
+        layers.append(block(self.inplanes, planes, fixed_block=fixed_block))
       else:
-        layers.append(block(self.inplanes, planes, se_loss=False,fixed_block=fixed_block))
+        layers.append(block(self.inplanes, planes, fixed_block=fixed_block))
       if cfg.start_fix:
         cfg.layer_index += 1
     return nn.Sequential(*layers)
@@ -230,74 +219,67 @@ class DataAttentionResNet(nn.Module):
     x = self.layer1(x)
     x = self.layer2(x)
 
-    if self.se_loss:
-      x, se_pred1 = self.layer3(x)
-      x, se_pred2 = self.layer4(x)
-    else:
-      x = self.layer3(x)
-      x = self.layer4(x) 
+    x = self.layer3(x)
+    x = self.layer4(x) 
 
     x = self.avgpool(x)
     x = x.view(x.size(0), -1)
     #x = self.fc[cfg.cls_ind](x)
     x = self.fc(x)
-    if self.se_loss: return x, se_pred1, se_pred2
     return x
 
-def data_att_resnet18(pretrained=False, se_loss=False):
+def data_att_resnet18(pretrained=False):
   """Constructs a ResNet-18 model.
   Args:
     pretrained (bool): If True, returns a model pre-trained on ImageNet
   """
-  model = DataAttentionResNet(SEBasicBlock, [2, 2, 2, 2], se_loss=se_loss)
+  model = DataAttentionResNet(SEBasicBlock, [2, 2, 2, 2])
   if pretrained:
     model.load_state_dict(model_zoo.load_url(model_urls['resnet18']))
   return model
 
-def data_att_resnet34(pretrained=False, se_loss=False):
+def data_att_resnet34(pretrained=False):
   """Constructs a ResNet-34 model.
   Args:
     pretrained (bool): If True, returns a model pre-trained on ImageNet
   """
-  model = DataAttentionResNet(SEBasicBlock, [3, 4, 6, 3], se_loss=se_loss)
+  model = DataAttentionResNet(SEBasicBlock, [3, 4, 6, 3])
   if pretrained:
     model.load_state_dict(model_zoo.load_url(model_urls['resnet34']))
   return model
 
-def data_att_resnet50(pretrained=False, se_loss=False):
+def data_att_resnet50(pretrained=False):
   """Constructs a ResNet-50 model.
   Args:
     pretrained (bool): If True, returns a model pre-trained on ImageNet
   """
-  model = DataAttentionResNet(SEBottleneck, [3, 4, 6, 3], se_loss=se_loss)
+  model = DataAttentionResNet(SEBottleneck, [3, 4, 6, 3])
 #   if pretrained:
 #     model.load_state_dict(model_zoo.load_url(model_urls['resnet50']))
   return model
 
-def data_att_resnet101(pretrained=False, se_loss=False):
+def data_att_resnet101(pretrained=False):
   """Constructs a ResNet-101 model.
   Args:
     pretrained (bool): If True, returns a model pre-trained on ImageNet
   """
-  model = DataAttentionResNet(SEBottleneck, [3, 4, 23, 3], se_loss=se_loss)
+  model = DataAttentionResNet(SEBottleneck, [3, 4, 23, 3])
   if pretrained:
     model.load_state_dict(model_zoo.load_url(model_urls['resnet101']))
   return model
 
-def data_att_resnet152(pretrained=False, se_loss=False):
+def data_att_resnet152(pretrained=False):
   """Constructs a ResNet-152 model.
   Args:
     pretrained (bool): If True, returns a model pre-trained on ImageNet
   """
-  model = DataAttentionResNet(SEBottleneck, [3, 8, 36, 3], se_loss=se_loss)
+  model = DataAttentionResNet(SEBottleneck, [3, 8, 36, 3])
   if pretrained:
     model.load_state_dict(model_zoo.load_url(model_urls['resnet152']))
   return model
 
 class Datasets_Attention(_fasterRCNN):
-  def __init__(self, classes, num_layers=101, pretrained=False, class_agnostic=False, rpn_batchsize_list=None, se_loss=False, se_weight=1.0):
-    self.se_loss = se_loss
-    self.se_weight = se_weight
+  def __init__(self, classes, num_layers=101, pretrained=False, class_agnostic=False, rpn_batchsize_list=None):
     self.model_path = 'data/pretrained_model/se_resnet' + str(num_layers) + '.pth.tar'
     if num_layers == 18:
       self.dout_base_model = 256
@@ -312,17 +294,11 @@ class Datasets_Attention(_fasterRCNN):
     _fasterRCNN.__init__(self, classes, class_agnostic,rpn_batchsize_list)
 
   def _init_modules(self):
-    resnet = eval('data_att_resnet' + str(self.num_layers))(se_loss=self.se_loss)
+    resnet = eval('data_att_resnet' + str(self.num_layers))()
 
     if self.pretrained == True:
       state_dict = torch.load(self.model_path)['state_dict']     
       print("Loading pretrained weights from %s" %(self.model_path))
-      
-      # load weight and bias of bn params for each datasets
-    #   for k, v in state_dict.items():
-    #     print(k)
-    #   for k in resnet.state_dict():
-    #     print(k)
       new_state_dict = {}
       
       for k, v in state_dict.items():

@@ -8,7 +8,7 @@ import torch
 from model.faster_rcnn.se_module_vector import SELayer
 
 class DatasetsAttention(nn.Module):
-    def __init__(self, planes, reduction=16, se_loss=False, nclass_list=None, fixed_block=False):
+    def __init__(self, planes, reduction=16, nclass_list=None, fixed_block=False):
         super(DatasetsAttention, self).__init__()
         self.planes = planes
         num_adapters = cfg.num_adapters
@@ -26,11 +26,11 @@ class DatasetsAttention(nn.Module):
                 if cfg.layer_index % 2 != 0:
                     self.fixed_block = True
         if self.fixed_block or num_adapters == 1:
-            self.SE_Layers = nn.ModuleList([SELayer(planes, reduction, se_loss=se_loss, nclass=num_class, with_sigmoid=False) for num_class in range(1)])
+            self.SE_Layers = nn.ModuleList([SELayer(planes, reduction, with_sigmoid=False) for num_class in range(1)])
         elif num_adapters == 0:
-            self.SE_Layers = nn.ModuleList([SELayer(planes, reduction, se_loss=se_loss, nclass=num_class, with_sigmoid=False) for num_class in nclass_list])
+            self.SE_Layers = nn.ModuleList([SELayer(planes, reduction, with_sigmoid=False) for num_class in nclass_list])
         else:
-            self.SE_Layers = nn.ModuleList([SELayer(planes, reduction, se_loss=se_loss, nclass=num_class, with_sigmoid=False) for num_class in range(num_adapters)])
+            self.SE_Layers = nn.ModuleList([SELayer(planes, reduction, with_sigmoid=False) for num_class in range(num_adapters)])
         self.fc_1 = nn.Linear(planes, self.n_datasets)
         self.sigmoid = nn.Sigmoid()
         self.softmax = nn.Softmax(dim=1)

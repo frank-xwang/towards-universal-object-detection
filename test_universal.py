@@ -434,15 +434,8 @@ if __name__ == '__main__':
     'faster_rcnn_universal_{}_{}_{}.pth'.format(args.checksession, args.checkepoch, args.checkpoint))
 
   # initilize the network here.
-  if args.net == 'res50':
-    fasterRCNN = resnet(imdb.classes, 50, pretrained=False, class_agnostic=args.class_agnostic,rpn_batchsize_list=cfg.train_batchsize_list)
-  elif args.net == 'da_res50':
-    fasterRCNN = Datasets_Attention(imdb.classes, 50, pretrained=False, class_agnostic=args.class_agnostic,rpn_batchsize_list=cfg.train_batchsize_list, \
-    se_loss=False, se_weight=1.0)
-  else:
-    print("network is not defined")
-    pdb.set_trace()
-
+  fasterRCNN = Datasets_Attention(imdb.classes, 50, pretrained=False, class_agnostic=args.class_agnostic,\
+                                rpn_batchsize_list=cfg.train_batchsize_list)
   fasterRCNN.create_architecture()
 
   print("load checkpoint %s" % (load_name))

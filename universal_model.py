@@ -378,8 +378,8 @@ if __name__ == '__main__':
         print('iters_per_epoch for datasets {%s} is: {%d}'%(cfg.imdb_name_list[iters], iters_per_epoch_list[iters]))
         print('num of classes for datasets {%s} is: {%d}'%(cfg.imdb_name_list[iters], cfg.num_classes[iters]))
     # initilize the network here.
-    fasterRCNN = Datasets_Attention(imdb.classes, 50, pretrained=True, class_agnostic=args.class_agnostic, rpn_batchsize_list=cfg.train_batchsize_list, \
-        se_loss=False, se_weight=1.0)
+    fasterRCNN = Datasets_Attention(imdb.classes, 50, pretrained=True, class_agnostic=args.class_agnostic, \
+                                    rpn_batchsize_list=cfg.train_batchsize_list)
     fasterRCNN.create_architecture()
 
     lr = args.lr

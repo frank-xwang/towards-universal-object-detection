@@ -6,7 +6,7 @@ less_blocks=False
 
 ### Arguments for checkpoints
 EPOCH=14
-SESSION=1100
+SESSION=11
 CHECKPOINT=13331
 
 ### Uncomment the datasest to test
