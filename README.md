@@ -115,13 +115,11 @@ Change dataset to "coco" or 'vg' if you want to train on COCO or Visual Genome.
 
 ## Test
 
-If you want to evaluate the detection performance of a pre-trained vgg16 model on pascal_voc test set, simply run
+If you want to evaluate the detection performance of each datasets, download pre-trained model and put it in models/da_res50/universal/, then simply run:
 ```
-python test_net.py --dataset pascal_voc --net da-50 \
-                   --checksession $SESSION --checkepoch $EPOCH --checkpoint $CHECKPOINT \
-                   --cuda
+bash scripts/test_universal.sh
 ```
-Specify the specific model session, checkepoch and checkpoint, e.g., SESSION=1, EPOCH=6, CHECKPOINT=416.
+Specify the specific GPU device ID(GPU_ID), network(net), data directory(DATA_DIR), number of adapters(num_adapters), model session(SESSION), checkepoch(EPOCH), checkpoint iterations(CHECKPOINT), datasets to test(datasets) and etc. before running test_universal.sh file. Only sigle GPU testing is supported.
 
 Results and models:
 
@@ -134,12 +132,15 @@ Results and models:
 ### Some popular problems
 1. fatal error: cuda.h: No such file or directory:
 
-    Add export C_INCLUDE_PATH=/usr/local/cuda-9.0/include:${C_INCLUDE_PATH}
-    before run "sh make.sh"
+    Export C_INCLUDE_PATH=/usr/local/cuda-9.0/include:${C_INCLUDE_PATH}, then run "sh make.sh"
 
 2. RuntimeError: CUDNN_STATUS_EXECUTION_FAILED:
     
     Usually, this is caused by using different cudnn when building and running pytorch. You can check this simply by running: torch.backends.cudnn.version(). You can also test by checking if the output of "pytorch.version.cuda" and "nvcc --version" gives you the same cudnn version. If the above checks fail, you need to reinstall pytorch and make sure to use the same cudnn within the inference time.
+    
+3. THCudaCheck FAIL file=/opt/conda/conda-bld/pytorch_1524586445097/work/aten/src/THC/THCGeneral.cpp line=844 error=11 : invalid argument
+
+    This error will appear for RTX2080 GPU cards with cuda9.x. This error will not have influence during inference and training time for pytorch0.4.0, we can simly ignore it. Check [issue](https://github.com/pytorch/pytorch/issues/21154) and [issue](https://discuss.pytorch.org/t/thcudacheck-fail-file-pytorch-aten-src-thc-thcgeneral-cpp/31788/13) for details.
 
 ### Citation
 
