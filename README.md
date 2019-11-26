@@ -142,6 +142,8 @@ Results and models:
 
     This error will appear for RTX2080 GPU cards with cuda9.x. This error will not have influence during inference and training time for pytorch0.4.0, we can simly ignore it. Check [issue](https://github.com/pytorch/pytorch/issues/21154) and [issue](https://discuss.pytorch.org/t/thcudacheck-fail-file-pytorch-aten-src-thc-thcgeneral-cpp/31788/13) for details.
 
+If you meet any problems, please feel free to contact me by: frank.xudongwang@gmail.com
+
 ### Citation
 
 If you use our code/model/data, please cite our paper:
