@@ -115,7 +115,7 @@ Change dataset to "coco" or 'vg' if you want to train on COCO or Visual Genome.
 
 ## Test
 
-If you want to evaluate the detection performance of each datasets, simply run:
+If you want to evaluate the detection performance of each datasets, download pre-trained model and put it in models/da_res50/universal/, then simply run:
 ```
 bash scripts/test_universal.sh
 ```
