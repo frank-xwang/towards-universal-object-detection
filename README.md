@@ -115,13 +115,11 @@ Change dataset to "coco" or 'vg' if you want to train on COCO or Visual Genome.
 
 ## Test
 
-If you want to evaluate the detection performance of a pre-trained vgg16 model on pascal_voc test set, simply run
+If you want to evaluate the detection performance of each datasets, simply run:
 ```
-python test_net.py --dataset pascal_voc --net da-50 \
-                   --checksession $SESSION --checkepoch $EPOCH --checkpoint $CHECKPOINT \
-                   --cuda
+bash scripts/test_universal.sh
 ```
-Specify the specific model session, checkepoch and checkpoint, e.g., SESSION=1, EPOCH=6, CHECKPOINT=416.
+Specify the specific GPU device ID(GPU_ID), network(net), data directory(DATA_DIR), number of adapters(num_adapters), model session(SESSION), checkepoch(EPOCH), checkpoint iterations(CHECKPOINT), datasets to test(datasets) and etc. before running test_universal.sh file.
 
 Results and models:
 
