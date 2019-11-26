@@ -89,15 +89,6 @@ def parse_args():
   parser.add_argument('--vis', dest='vis',
                       help='visualization mode',
                       action='store_true')
-  parser.add_argument('--fa_conv_num', dest='fa_conv_num',
-                      help='checkpoint to pretrained model',
-                      default=1, type=int)    
-  parser.add_argument('--finetuneBN_DS', dest='finetuneBN_DS',
-                      help='checkpoint to pretrained model',
-                      default=-1, type=int)
-  parser.add_argument('--finetuneBN_linear', dest='finetuneBN_linear',
-                      help='checkpoint to pretrained model',
-                      default=-1, type=int)
   parser.add_argument('--random_resize', dest='random_resize',
                       help='whether randomly resize images',
                       default="False", type=str)       
@@ -119,6 +110,8 @@ def parse_args():
   parser.add_argument('--rpn_univ', dest='rpn_univ',
                     help='Whether use universal rpn',
                     default='False', type=str)
+  parser.add_argument('--datasets_list', nargs='+', 
+                    help='datasets list for training', required=True)
   args = parser.parse_args()
   return args
 
@@ -137,228 +130,13 @@ if __name__ == '__main__':
     print("WARNING: You have a CUDA device, so you should probably run with --cuda")
 
   np.random.seed(cfg.RNG_SEED)
-  if args.dataset == "pascal_voc":
-      args.imdb_name = "voc_2007_trainval"
-      args.imdbval_name = "voc_2007_test"
-      cfg.POOLING_SIZE_H = 7
-      cfg.POOLING_SIZE_W = 7
-      cfg.dataset = args.dataset
-      args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]', 'ANCHOR_RATIOS', '[0.5,1,2]']
-      #args.set_cfgs = ['ANCHOR_SCALES', '[2.72, 3.81, 5.45, 7.64, 10.9, 15.27, 21.8, 32]', 'ANCHOR_RATIOS', '[2]']
-  elif args.dataset == "pascal_voc_0712":
-      cfg.POOLING_SIZE_H = 7
-      cfg.POOLING_SIZE_W = 7
-      cfg.dataset = args.dataset
-      args.imdb_name = "voc_2007_trainval+voc_2012_trainval"
-      args.imdbval_name = "voc_2007_test"
-      args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]', 'ANCHOR_RATIOS', '[0.5,1,2]']
-      args.set_cfgs = ['ANCHOR_SCALES', '[0.75, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24, 30]', 'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '50']
-  elif args.dataset == "coco":
-      args.imdb_name = "coco_2014_train+coco_2014_valminusminival"
-      args.imdbval_name = "coco_2014_minival"
-      cfg.POOLING_SIZE_H = 7
-      cfg.POOLING_SIZE_W = 7
-      cfg.TEST.SCALES=(800,)
-      args.set_cfgs = ['ANCHOR_SCALES', '[4, 8, 16, 32]', 'ANCHOR_RATIOS', '[0.5,1,2]']
-      cfg.dataset = args.dataset
-  elif args.dataset == "imagenet":
-      args.imdb_name = "imagenet_train"
-      args.imdbval_name = "imagenet_val"
-      args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]', 'ANCHOR_RATIOS', '[0.5,1,2]']
-      cfg.dataset = args.dataset
-  elif args.dataset == "vg":
-      args.imdb_name = "vg_150-50-50_minitrain"
-      args.imdbval_name = "vg_150-50-50_minival"
-      args.set_cfgs = ['ANCHOR_SCALES', '[4, 8, 16, 32]', 'ANCHOR_RATIOS', '[0.5,1,2]']
-      cfg.dataset = args.dataset
-  elif args.dataset == "caltech":
-      args.imdb_name = "caltech_test"
-      args.imdbval_name = "caltech_test"      
-      cfg.TRAIN.RPN_BATCHSIZE = 32
-      cfg.RPN_POSITIVE_OVERLAP = 0.5
-      cfg.TRAIN.RPN_NMS_THRESH = 0.65
-      cfg.TRAIN.FG_THRESH = 0.45
-      cfg.imdb_name = "caltech_test"
-      cfg.TEST.SCALES=(720,)
-      ## scales*11 is the new_width, new_width*ratio is new height
-      # 30, 42, 60, 84, 120, 168, 240
-      args.set_cfgs = ['ANCHOR_SCALES', '[2.72, 3.81, 5.45, 7.64, 10.9, 15.27, 21.8, 32]', 'ANCHOR_RATIOS', '[2]', 'MAX_NUM_GT_BOXES', '20']
-      cfg.dataset = args.dataset
-  
-  elif args.dataset == "widerface":
-      args.imdb_name = "widerface_val"
-      args.imdbval_name = "widerface_val"
-      cfg.POOLING_SIZE_H = 7
-      cfg.POOLING_SIZE_W = 7
-      cfg.dataset = args.dataset
-      cfg.imdb_name = "widerface_train"
-      cfg.TRAIN.SCALES=(800,)
-      cfg.TEST.SCALES=(800,)
-      cfg.sample_mode = 'random' # use bootstrap or ramdom as sampling method
-      #cfg.TRAIN.USE_ALL_GT = True # choose true if want to exclude all proposals overlap with 'people' larger than 0.3
-      cfg.filter_empty = False # whether filter 0 gt images
-      cfg.DEBUG = False # set as True if debug whether 'people' is ignored
-      ## scales*11 is the new_width, new_width*ratio is new height
-      # 30, 42, 60, 84, 120, 168, 240 width
-      args.set_cfgs = ['ANCHOR_SCALES', '[2, 4, 8, 10, 12, 16, 20, 24, 28, 32]', 'ANCHOR_RATIOS', '[1,2]', 'MAX_NUM_GT_BOXES', '300']
-      args.set_cfgs = ['ANCHOR_SCALES', '[0.75, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24, 30]', 'ANCHOR_RATIOS', '[1]', 'MAX_NUM_GT_BOXES', '300']
-      #args.set_cfgs = ['ANCHOR_SCALES', '[0.75, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24, 30]', 'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '300']
-      cfg.dataset = args.dataset
-
-  elif args.dataset == "KITTIVOC":
-      args.imdb_name = "kittivoc_test"
-      args.imdbval_name = "kittivoc_test"
-      cfg.dataset = args.dataset
-      cfg.imdb_name = args.imdb_name
-      cfg.TEST.SCALES=(576,)
-      cfg.TEST.NMS = 0.3
-      cfg.POOLING_SIZE_H = 7
-      cfg.POOLING_SIZE_W = 7
-      args.set_cfgs = ['ANCHOR_SCALES', '[0.75, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24, 30]', 'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '30']
-      #args.set_cfgs = ['ANCHOR_SCALES', '[1, 2, 4, 6, 8, 12, 16, 24, 28, 30, 32]', 'ANCHOR_RATIOS', '[2]', 'MAX_NUM_GT_BOXES', '30']
-      #args.set_cfgs = ['ANCHOR_SCALES', '[4, 8, 16, 32]', 'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '30']
-      # RPN_BATCHSIZE is used for rpn loss, only choose RPN_BATCHSIZE
-      # prediction of rpn for getting rpn loss
-      cfg.dataset = args.dataset
-
-      # BATCH_SIZE is used for definding the number of rois
-      # we will chosee for rcnn part.
-  elif args.dataset == "citypersons":
-      args.imdb_name = "citypersons_val"
-      args.imdbval_name = "citypersons_val"
-      cfg.POOLING_SIZE_H = 8
-      cfg.POOLING_SIZE_W = 4
-      cfg.dataset = args.dataset
-      cfg.imdb_name = "citypersons_train"
-      cfg.TEST.RPN_NMS_THRESH = 0.7
-      cfg.TEST.NMS = 0.5 #original is 0.3, 0.5 is the same as official code
-      cfg.TEST.SCALES=(1331,)
-      cfg.sample_mode = 'random' # use bootstrap or ramdom as sampling method
-      cfg.TRAIN.USE_ALL_GT = True # choose true if want to exclude all proposals overlap with 'people' larger than 0.3
-      cfg.filter_empty = False # whether filter 0 gt images
-      cfg.DEBUG = False # set as True if debug whether 'people' is ignored
-      ## scales*11 is the new_width, new_width*ratio is new height
-      # 30, 42, 60, 84, 120, 168, 240 width
-      args.set_cfgs = ['ANCHOR_SCALES', '[2, 4, 8, 10, 12, 16, 20, 24, 28, 32]', 'ANCHOR_RATIOS', '[1, 2]', 'MAX_NUM_GT_BOXES', '50']
-      args.set_cfgs = ['ANCHOR_SCALES', '[0.75, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24, 30]', 'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '30']
-      cfg.dataset = args.dataset
-
-  elif args.dataset == "KAISTVOC":
-      args.imdb_name = "kaist_train"
-      args.imdbval_name = "kaist_test"
-      cfg.dataset = args.dataset
-      cfg.imdb_name = args.imdb_name
-      cfg.TRAIN.USE_FLIPPED = True 
-      cfg.TRAIN.RPN_BATCHSIZE = 32
-      cfg.TRAIN.BATCH_SIZE =128
-      cfg.RPN_POSITIVE_OVERLAP = 0.5
-      cfg.TRAIN.RPN_NMS_THRESH = 0.65
-      cfg.POOLING_SIZE_H = 8
-      cfg.POOLING_SIZE_W = 4
-      cfg.TRAIN.FG_THRESH = 0.45
-      cfg.TRAIN.SCALES=(720,)
-      cfg.sample_mode = 'bootstrap' # use bootstrap or ramdom as sampling method
-      cfg.TRAIN.USE_ALL_GT = True # choose true if want to exclude all proposals overlap with 'people' larger than 0.3
-      cfg.filter_empty = False # whether filter 0 gt images
-      cfg.DEBUG = False # set as True if debug whether 'people' is ignored
-      ## scales*11 is the new_width, new_width*ratio is new height
-      # 30, 42, 60, 84, 120, 168, 240 width
-      args.set_cfgs = ['ANCHOR_SCALES', '[1, 2, 4, 6, 8, 12, 16, 24, 28, 30, 32]', 'ANCHOR_RATIOS', '[2]', 'MAX_NUM_GT_BOXES', '30']
-      cfg.dataset = args.dataset
-
-  elif args.dataset == "dota":
-      args.imdb_name = "dota_train"
-      args.imdbval_name = "dota_val"
-      cfg.dataset = args.dataset
-      cfg.TRAIN.SCALES=(600,)
-      cfg.TRAIN.SCALES=(600,)
-      cfg.TRAIN.USE_FLIPPED = True
-      cfg.imdb_name = args.imdb_name
-      cfg.POOLING_SIZE_H = 7
-      cfg.POOLING_SIZE_W = 7
-      args.set_cfgs = ['ANCHOR_SCALES', '[4, 8, 16, 32]', 'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
-      args.set_cfgs = ['ANCHOR_SCALES', '[0.75, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24, 30]', 'ANCHOR_RATIOS', '[0.5, 1, 2]', 'MAX_NUM_GT_BOXES', '100']
-      cfg.dataset = args.dataset
-
-  elif args.dataset == "Kitchen":
-      args.imdb_name = "kitchen_train"
-      args.imdbval_name = "kitchen_test"
-      cfg.dataset = args.dataset
-      cfg.TRAIN.SCALES=(800,)
-      cfg.TEST.SCALES=(800,)
-      cfg.TRAIN.USE_FLIPPED = True
-      cfg.imdb_name = args.imdb_name
-      cfg.POOLING_SIZE_H = 7
-      cfg.POOLING_SIZE_W = 7
-      args.set_cfgs = ['ANCHOR_SCALES', '[4, 8, 16, 32]', 'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
-      args.set_cfgs = ['ANCHOR_SCALES', '[0.75, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24, 30]', 'ANCHOR_RATIOS', '[0.5, 1, 2]', 'MAX_NUM_GT_BOXES', '30']
-      cfg.dataset = args.dataset
-
-  elif args.dataset == "LISA":
-      args.imdb_name = "LISA_test"
-      args.imdbval_name = "LISA_test"
-      cfg.dataset = args.dataset
-      cfg.imdb_name = args.imdb_name
-      cfg.TRAIN.SCALES=(800,)
-      cfg.TEST.SCALES=(800,)
-      cfg.TEST.NMS = 0.3
-      cfg.POOLING_SIZE_H = 7
-      cfg.POOLING_SIZE_W = 7
-      args.set_cfgs = ['ANCHOR_SCALES', '[0.75, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24, 30]', 'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '30']
-      cfg.dataset = args.dataset
-
-  elif args.dataset == "deeplesion":
-        args.imdb_name = "deeplesion_trainval"
-        args.imdbval_name = "deeplesion_test"
-        cfg.dataset = args.dataset
-        cfg.TRAIN.SCALES=(512,)
-        cfg.TEST.SCALES=(512,)
-        cfg.TRAIN.RPN_BATCHSIZE = 128 # SHOULD CHANGE ABOVE BUILDING MODEL BLOCKS
-        cfg.TRAIN.BATCH_SIZE = 64   # SHOULD CHANGE ABOVE BUILDING MODEL BLOCKS
-        cfg.TRAIN.USE_FLIPPED = True
-        cfg.imdb_name = args.imdb_name
-        cfg.POOLING_SIZE_H = 7
-        cfg.POOLING_SIZE_W = 7
-        cfg.TEST.RPN_MIN_SIZE = 16 # original is 16
-        cfg.TEST.RPN_NMS_THRESH = 0.7 # original is 0.7
-        args.set_cfgs = ['ANCHOR_SCALES', '[4, 8, 16, 32]', 'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
-        args.set_cfgs = ['ANCHOR_SCALES', '[1, 2, 4, 8, 16, 24, 32, 48, 96]', 'ANCHOR_RATIOS', '[0.5, 1, 2]', 'MAX_NUM_GT_BOXES', '10']  
-        cfg.dataset = args.dataset
-
-  elif args.dataset == "clipart" or args.dataset == "comic" or args.dataset == "watercolor":
-      if args.dataset == "clipart" :
-        args.imdb_name = "clipart_train"
-        args.imdbval_name = "clipart_test"
-      elif args.dataset == "comic" :
-        args.imdb_name = "comic_train"
-        args.imdbval_name = "comic_test"
-      elif args.dataset == "watercolor" :
-        args.imdb_name = "watercolor_train"
-        args.imdbval_name = "watercolor_test"
-
-      cfg.dataset = args.dataset
-      cfg.TRAIN.SCALES=(600,)
-      cfg.TEST.SCALES=(600,)
-      cfg.TRAIN.BATCH_SIZE = 256
-      cfg.TRAIN.RPN_BATCHSIZE = 256
-      cfg.TRAIN.USE_FLIPPED = True
-      cfg.imdb_name = args.imdb_name
-      cfg.filter_empty = True
-      cfg.POOLING_SIZE_H = 7
-      cfg.POOLING_SIZE_W = 7
-      #args.set_cfgs = ['ANCHOR_SCALES', '[2.72, 3.81, 5.45, 7.64, 10.9, 15.27, 21.8, 32]', 'ANCHOR_RATIOS', '[2]', 'MAX_NUM_GT_BOXES', '20']
-      args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]', 'ANCHOR_RATIOS', '[0.5, 1, 2]', 'MAX_NUM_GT_BOXES', '20']
-      args.set_cfgs = ['ANCHOR_SCALES', '[0.75, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24, 30]', 'ANCHOR_RATIOS', '[0.5, 1, 2]', 'MAX_NUM_GT_BOXES', '30']
 
   # cfg.datasets_list = ['KITTIVOC','widerface','pascal_voc_0712','Kitchen','LISA']
-  # cfg.datasets_list = ['deeplesion','clipart','KITTIVOC']
-  # cfg.datasets_list = ['Kitchen', 'widerface', 'deeplesion','clipart','LISA']
-  # cfg.datasets_list = ['deeplesion','clipart','KITTIVOC', 'dota']
-  # cfg.datasets_list = ['LISA','pascal_voc_0712','Kitchen','coco','clipart','watercolor','comic','widerface','dota','deeplesion','KITTIVOC']
-  cfg.datasets_list = ['KITTIVOC','widerface','pascal_voc_0712','Kitchen','LISA','deeplesion','coco','clipart','comic', 'watercolor','dota']
+  cfg.datasets_list = args.datasets_list
   cfg.imdb_name_list                = univ_info(cfg.datasets_list, 'imdb_name', test=True)
   cfg.imdbval_name_list             = univ_info(cfg.datasets_list, 'imdbval_name', test=True)
   cfg.train_scales_list             = univ_info(cfg.datasets_list, 'SCALES', test=True)
+  cfg.test_scales_list              = univ_info(cfg.datasets_list, 'SCALES_TEST', test=True)
   cfg.train_rpn_batchsize_list      = univ_info(cfg.datasets_list, 'RPN_BATCHSIZE', test=True)
   cfg.train_batchsize_list          = univ_info(cfg.datasets_list, 'BATCH_SIZE', test=True)
   cfg.rpn_positive_overlap_list     = univ_info(cfg.datasets_list, 'RPN_POSITIVE_OVERLAP', test=True)
@@ -369,18 +147,16 @@ if __name__ == '__main__':
   cfg.ANCHOR_RATIOS_LIST            = univ_info(cfg.datasets_list, 'ANCHOR_RATIOS', test=True)
   cfg.filp_image                    = univ_info(cfg.datasets_list, 'USE_FLIPPED', test=True)
   cfg.num_classes                   = univ_info(cfg.datasets_list, 'num_classes', test=True)
-  cfg.add_filter_ratio = 0
-  cfg.add_filter_num = 0
+  cfg.set_cfgs_list                 = univ_info(cfg.datasets_list, 'set_cfgs', test=True)
   cfg.ANCHOR_NUM = np.arange(len(cfg.num_classes))
   for i in range(len(cfg.num_classes)):
       cfg.ANCHOR_NUM[i] = len(cfg.ANCHOR_SCALES_LIST[i])*len(cfg.ANCHOR_RATIOS_LIST[i])
   
   cfg.rpn_univ = args.rpn_univ == 'True'
   if cfg.rpn_univ:
-      cfg.ANCHOR_SCALES_LIST = [[0.75, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24, 30]]#[cfg.ANCHOR_SCALES]
+      cfg.ANCHOR_SCALES_LIST = [cfg.ANCHOR_SCALES]
       cfg.ANCHOR_RATIOS_LIST = [cfg.ANCHOR_RATIOS]
       cfg.ANCHOR_NUM = [len(cfg.ANCHOR_SCALES_LIST[0])*len(cfg.ANCHOR_RATIOS_LIST[0])]
-
   cfg.mode = 'universal'
 
   #####################################################
@@ -389,10 +165,13 @@ if __name__ == '__main__':
   cls_ind = cfg.datasets_list.index(args.dataset)
   cfg.cls_ind = cls_ind
   cfg.dataset = cfg.datasets_list[cfg.cls_ind]
-  args.set_cfgs = ['ANCHOR_SCALES', '[0.75, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24, 30]', 'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '300']
-  cfg.POOLING_SIZE_H = 7
-  cfg.POOLING_SIZE_W = 7
-  cfg.random_resize = False
+  args.set_cfgs = cfg.set_cfgs_list[cfg.cls_ind]
+  cfg.TRAIN.SCALES = cfg.train_scales_list[cls_ind]
+  cfg.TEST.SCALES = cfg.test_scales_list[cls_ind]
+  cfg.TRAIN.BATCH_SIZE = cfg.train_batchsize_list[cls_ind]
+  cfg.TRAIN.RPN_BATCHSIZE = cfg.train_rpn_batchsize_list[cls_ind]
+  args.imdb_name = cfg.imdb_name_list[cls_ind]
+  args.imdbval_name = cfg.imdbval_name_list[cls_ind]
   cfg.rpn_rois_process = 0
   #####################################################
   args.cfg_file = "cfgs/{}_ls.yml".format(args.net) if args.large_scale else "cfgs/{}.yml".format(args.net)
@@ -403,15 +182,15 @@ if __name__ == '__main__':
 
   print('Using config:')
   pprint.pprint(cfg)
-  cfg.sample_mode = 'random'
   cfg.DEBUG = False
-  cfg.filter_empty = True
-  cfg.TRAIN.USE_FLIPPED = False
   cfg.fix_bn = False
-  cfg.finetuneBN_DS = args.finetuneBN_DS == 1
-  cfg.finetuneBN_linear = args.finetuneBN_linear == 1
-  cfg.fa_conv_num = args.fa_conv_num
+  cfg.POOLING_SIZE_H = 7
+  cfg.POOLING_SIZE_W = 7
+  cfg.filter_empty = True
+  cfg.random_resize = False
+  cfg.sample_mode = 'random'
   cfg.DATA_DIR = args.DATA_DIR
+  cfg.TRAIN.USE_FLIPPED = False
   cfg.num_adapters = args.num_adapters
   cfg.less_blocks = args.less_blocks == 'True'
 
@@ -441,8 +220,6 @@ if __name__ == '__main__':
   print("load checkpoint %s" % (load_name))
   checkpoint = torch.load(load_name)
   fasterRCNN.load_state_dict(checkpoint['model'])
-  # optimizer.load_state_dict(checkpoint['optimizer'])
-  # lr = optimizer.param_groups[0]['lr']
 
   print('load model successfully!')
   # initilize the tensor holder here.
@@ -490,8 +267,7 @@ if __name__ == '__main__':
   dataset = roibatchLoader(roidb, ratio_list, ratio_index, args.batch_size, \
                         imdb.num_classes, training=False, normalize = False)
   dataloader = torch.utils.data.DataLoader(dataset, batch_size=args.batch_size,
-                            shuffle=False, num_workers=0,
-                            pin_memory=True)
+                            shuffle=False, num_workers=0, pin_memory=True)
 
   data_iter = iter(dataloader)
 
@@ -559,7 +335,6 @@ if __name__ == '__main__':
               cls_boxes = pred_boxes[inds][:, j * 4:(j + 1) * 4]
             
             cls_dets = torch.cat((cls_boxes, cls_scores.unsqueeze(1)), 1)
-            # cls_dets = torch.cat((cls_boxes, cls_scores), 1)
             cls_dets = cls_dets[order]
             keep = nms(cls_dets, cfg.TEST.NMS)
             cls_dets = cls_dets[keep.view(-1).long()]

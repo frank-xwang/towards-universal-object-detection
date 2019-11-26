@@ -1,4 +1,5 @@
 GPU_ID=8
+batch_size=1
 net=da_res50
 DATA_DIR=data
 num_adapters=11
@@ -10,25 +11,18 @@ SESSION=11
 CHECKPOINT=13331
 
 ### Uncomment the datasest to test
-# datasets=coco
-# datasets=comic
-# datasets=watercolor
-# datasets=deeplesion
-# datasets=clipart
-# datasets=dota
-# datasets=KITTIVOC
-# datasets=pascal_voc_0712
-# datasets=widerface
-# datasets=Kitchen
-datasets=LISA
+datasets_test=LISA
+datasets_list='KITTIVOC widerface pascal_voc_0712 Kitchen LISA deeplesion coco clipart comic watercolor dota'
 
 CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=${GPU_ID} \
 python test_universal.py \
---dataset ${datasets} --net ${net} \
+--dataset ${datasets_test} --net ${net} \
 --checksession ${SESSION} \
 --checkepoch ${EPOCH} \
 --checkpoint ${CHECKPOINT} \
 --cuda --mGPUs \
 --DATA_DIR ${DATA_DIR} \
 --num_adapters ${num_adapters} \
---less_blocks ${less_blocks}
+--less_blocks ${less_blocks} \
+--datasets_list ${datasets_list} \
+--batch_size ${batch_size}
