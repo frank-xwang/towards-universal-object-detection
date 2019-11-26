@@ -1,0 +1,16 @@
+# Ignore data folder
+data/
+
+# Ignore models folder
+models/
+
+# Ignore .pyc .pyx .so .o .pkl .pth files
+*.pyc
+*.pyx
+*.so
+*.o
+*.pkl
+*.pth
+
+# Ignore cache files
+__pycache__/
