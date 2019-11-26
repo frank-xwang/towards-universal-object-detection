@@ -40,12 +40,7 @@ datasets=comic
 datasets=clipart
 datasets=watercolor
 
-<<<<<<< HEAD
 DATA_DIR=data
-=======
-DATA_DIR=/home/Xwang/HeadNode-1/universal_model_/data
-#/home/Xwang/HeadNode-1/universal_model_/models/se_res50/Kitchen/faster_rcnn_128_14_587.pth
->>>>>>> 793eeda709a4483589939795954491531204c768
 
 EPOCH=12
 CUDA_VISIBLE_DEVICES=${GPU_ID} python test_net.py \

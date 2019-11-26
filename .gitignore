@@ -1,7 +1,6 @@
 # Ignore data folder
 data/
 
-<<<<<<< HEAD
 # Ignore models folder
 models/
 
@@ -15,7 +14,3 @@ models/
 
 # Ignore cache files
 __pycache__/
-=======
-# Ignore .pyc files
-*.pyc
->>>>>>> 793eeda709a4483589939795954491531204c768
