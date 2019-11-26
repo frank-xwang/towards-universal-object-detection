@@ -134,8 +134,7 @@ Results and models:
 ### Some popular problems
 1. fatal error: cuda.h: No such file or directory:
 
-    Add export C_INCLUDE_PATH=/usr/local/cuda-9.0/include:${C_INCLUDE_PATH}
-    before run "sh make.sh"
+    Export C_INCLUDE_PATH=/usr/local/cuda-9.0/include:${C_INCLUDE_PATH}, then run "sh make.sh"
 
 2. RuntimeError: CUDNN_STATUS_EXECUTION_FAILED:
     
