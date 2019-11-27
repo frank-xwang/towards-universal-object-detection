@@ -23,7 +23,7 @@ Then put all the donwloaded datasets from [UODB benchmark](http://www.svcl.ucsd.
 
 ### prerequisites
 
-* Python 2.7 or 3.6
+* Python 3.6
 * Pytorch 0.4.0
 * CUDA 8.0 or higher
 
@@ -124,7 +124,7 @@ Results and models:
 
   | #Adapter | less_blocks | KITTI | VOC | Widerface | LISA | Kitchen | COCO | DOTA | DeepLesion | Comic | Clipart | Watercolor | AVG | Model |
   | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- |
-  | 11 | False  | 68.1 | 82.0 | 51.6 | 88.3 | 90.1 | 46.5 | 57.0 | 57.3 | 50.7 | 53.1 | 58.4 | 63.8 | [model](https://drive.google.com/file/d/1zh-WguXt3b1IKjfeyFWIOqOxLFflbghL/view?usp=sharing) |
+  | 11 | False  | 68.1 | 82.0 | 51.6 | 88.3 | 90.1 | 46.5 | 57.0 | 57.3 | 50.7 | 53.1 | 58.4 | 63.8 | [model](https://drive.google.com/file/d/1ItfA4PfeFMHDOgcyzoLlU69_r7AOznu4/view?usp=sharing) |
 
 ### Some popular problems
 1. fatal error: cuda.h: No such file or directory:
@@ -137,7 +137,7 @@ Results and models:
     
 3. THCudaCheck FAIL file=/opt/conda/conda-bld/pytorch_1524586445097/work/aten/src/THC/THCGeneral.cpp line=844 error=11 : invalid argument
 
-    This error will appear for RTX2080 GPU cards with cuda9.x. This error will not have influence during inference and training time for pytorch0.4.0, we can simly ignore it. Check [issue](https://github.com/pytorch/pytorch/issues/21154) and [issue](https://discuss.pytorch.org/t/thcudacheck-fail-file-pytorch-aten-src-thc-thcgeneral-cpp/31788/13) for details.
+    This error will appear for RTX2080 GPU cards with cuda9.x, you may need to install pytorch from source to solve it. Check [issue](https://github.com/pytorch/pytorch/issues/15797) and [issue](https://discuss.pytorch.org/t/thcudacheck-fail-file-pytorch-aten-src-thc-thcgeneral-cpp/31788/13) for details.
 
 If you meet any problems, please feel free to contact me by: frank.xudongwang@gmail.com
 

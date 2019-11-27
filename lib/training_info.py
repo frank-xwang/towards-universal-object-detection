@@ -7,7 +7,7 @@ def train_params(net, aim):
             PRE_ses=10
             PRE_checkpoint=8274
             #datasets=caltech
-            datasets=KITTIVOC
+            datasets=KITTI
             #datasets=pascal_voc_0712
             #datasets=coco
             #datasets=universal
@@ -34,7 +34,7 @@ def train_params(net, aim):
             PRE_ses=10
             PRE_checkpoint=8274
             #datasets=caltech
-            datasets=KITTIVOC
+            datasets=KITTI
             #datasets=pascal_voc_0712
             #datasets=coco
             #datasets=universal

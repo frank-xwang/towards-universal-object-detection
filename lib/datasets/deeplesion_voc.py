@@ -46,7 +46,7 @@ class deeplesion_voc(imdb):
         self._data_path = os.path.join(self._devkit_path)
         self._classes = ('__background__','lesion')
         self._class_to_ind = dict(zip(self.classes, xrange(self.num_classes)))
-        print(self._class_to_ind)
+        print('class name and index: ', self._class_to_ind)
         self._image_ext = '.png'
         self._image_index = self._load_image_set_index()
         # Default to roidb handler
@@ -94,23 +94,21 @@ class deeplesion_voc(imdb):
         """
         Load the indexes listed in this dataset's image set file.
         """
-        # Example path to image set file:
-        # self._devkit_path + /VOCdevkit2007/VOC2007/ImageSets/Main/val.txt
         image_set_file = os.path.join(self._data_path, 'ImageSets', 'Main',
                                       self._image_set + '.txt')
-        print('image_set_file of pascal voc is: ', image_set_file)
+        print('image_set_file loaded from: ', image_set_file)
         assert os.path.exists(image_set_file), \
             'Path does not exist: {}'.format(image_set_file)
         with open(image_set_file) as f:
             image_index = [x.strip() for x in f.readlines()]
-        print('image_index size of pascal voc is: ', len(image_index))
+        print('samples number is: ', len(image_index))
         return image_index
 
     def _get_default_path(self):
         """
         Return the default path where PASCAL VOC is expected to be installed.
         """
-        return os.path.join(cfg.DATA_DIR, cfg.dataset, 'VOCdevkit')
+        return os.path.join(cfg.DATA_DIR, cfg.dataset)
 
     def gt_roidb(self):
         """
@@ -119,11 +117,11 @@ class deeplesion_voc(imdb):
         This function loads/saves from/to a cache file to speed up future calls.
         """
         cache_file = os.path.join(self.cache_path, self.name + '_gt_roidb.pkl')
-        # if os.path.exists(cache_file):
-        #     with open(cache_file, 'rb') as fid:
-        #         roidb = pickle.load(fid)
-        #     print('{} gt roidb loaded from {}'.format(self.name, cache_file))
-        #     return roidb
+        if os.path.exists(cache_file):
+            with open(cache_file, 'rb') as fid:
+                roidb = pickle.load(fid)
+            print('{} gt roidb loaded from {}'.format(self.name, cache_file))
+            return roidb
 
         gt_roidb = [self._load_pascal_annotation(index)
                     for index in self.image_index]

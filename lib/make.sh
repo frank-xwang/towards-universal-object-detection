@@ -1,14 +1,10 @@
 #!/usr/bin/env bash
 
-<<<<<<< HEAD
 #CUDA_PATH=/usr/local/cuda-8.0${CUDA_PATH:+:${CUDA_PATH}}
 #CUDA_PATH=/usr/local/cuda-9.0${CUDA_PATH:+:${CUDA_PATH}}
 #PATH=/usr/local/cuda-8.0/bin${PATH:+:${PATH}}
 #PATH=/usr/local/cuda-9.0/bin${PATH:+:${PATH}}
 #PATH=/usr/local/cuda/include${PATH:+:${PATH}}
-=======
-CUDA_PATH=/usr/local/cuda-8.0
->>>>>>> 793eeda709a4483589939795954491531204c768
 
 python setup.py build_ext --inplace
 rm -rf build
@@ -18,13 +14,8 @@ CUDA_ARCH="-gencode arch=compute_30,code=sm_30 \
            -gencode arch=compute_50,code=sm_50 \
            -gencode arch=compute_52,code=sm_52 \
            -gencode arch=compute_60,code=sm_60 \
-<<<<<<< HEAD
            -gencode arch=compute_61,code=sm_61 \
            -gencode arch=compute_70,code=sm_70"
-=======
-           -gencode arch=compute_61,code=sm_61 "
-#	   -gencode arch=compute_70,code=sm_70 "
->>>>>>> 793eeda709a4483589939795954491531204c768
 
 # compile NMS
 cd model/nms/src

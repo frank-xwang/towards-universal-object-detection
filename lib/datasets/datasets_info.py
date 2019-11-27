@@ -74,7 +74,7 @@ def get_datasets_info(dataset, use_dict = False, test=False):
         datasets_info['ANCHOR_RATIOS'] = [0.5, 1, 2]
         datasets_info['num_classes'] = 4
         datasets_info['USE_FLIPPED'] = True
-    elif dataset == "KITTIVOC":
+    elif dataset == "KITTI":
         datasets_info['imdb_name'] = "kittivoc_train"
         datasets_info['imdbval_name'] = "kittivoc_val"
         datasets_info['RPN_BATCHSIZE'] = 256

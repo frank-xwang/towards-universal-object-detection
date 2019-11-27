@@ -22,8 +22,8 @@ test_model=coco
 datasets=coco
 datasets=dota
 test_model=dota
-datasets=KITTIVOC
-test_model=KITTIVOC
+datasets=KITTI
+test_model=KITTI
 
 datasets=deeplesion
 test_model=deeplesion

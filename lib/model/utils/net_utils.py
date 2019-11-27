@@ -6,7 +6,6 @@ import numpy as np
 import torchvision.models as models
 from model.utils.config import cfg
 from model.roi_crop.functions.roi_crop import RoICropFunction
-from model.faster_rcnn.dataset_attention_module import DatasetsAttention
 import cv2
 import pdb
 import random
@@ -54,46 +53,22 @@ def update_chosen_se_layer(model, cls_ind):
     """Computes a gradient clipping coefficient based on gradient norm."""
     num_datasets = len(cfg.datasets_list)
     for name, param in model.named_parameters():
-        if param.requires_grad and 'datasets_attention.SE_Layers.' in name and int(name.split('.')[-4]) != cls_ind:
+        if param.requires_grad and 'domain_attention.SE_Layers.' in name and int(name.split('.')[-4]) != cls_ind:
             param.grad.data.fill_(0)
-            # print(name, int(name.split('.')[-4]), cls_ind, int(name.split('.')[-4]) != cls_ind)
 
 def print_chosen_se_layer(model, cls_ind):
     """Computes a gradient clipping coefficient based on gradient norm."""
     num_datasets = len(cfg.datasets_list)
     for name, param in model.named_parameters():
-        if param.requires_grad and 'module.RCNN_top.0.2.datasets_attention.SE_Layers.' in name and '.fc.0.weight' in name:
+        if param.requires_grad and 'module.RCNN_top.0.2.domain_attention.SE_Layers.' in name and '.fc.0.weight' in name:
             print(name, torch.sum(param.grad.data), torch.sum(param), int(name.split('.')[-4]), cls_ind)
-            # print(name, int(name.split('.')[-2]), cls_ind, int(name.split('.')[-2]) != cls_ind)
-
-def add_filter_num(base):
-    if cfg.add_filter_ratio >= 0.005: 
-        add_num = int(base/(1.0+cfg.add_filter_ratio))
-    else:
-        add_num = cfg.add_filter_num
-    return add_num
-
-def add_filter_num2(base1, base2):
-    if cfg.add_filter_ratio >= 0.005:
-        add_num1 = int(base1/(1.0+cfg.add_filter_ratio))
-        add_num2 = int(base2/(1.0+cfg.add_filter_ratio))
-    else:
-        add_num1 = base1 - cfg.add_filter_num
-        add_num2 = base2 - cfg.add_filter_num
-    return add_num1,add_num2
 
 def fix_some_filters(model):
     """Fix some filters of certain layers."""
-    # rpn_list = ['module.RCNN_rpn.RPN_cls_score_layers.0.weight','module.RCNN_rpn.RPN_bbox_pred_layers.0.weight',\
-    #             'module.RCNN_rpn.RPN_cls_score_layers.0.bias','module.RCNN_rpn.RPN_bbox_pred_layers.0.bias' ]
-    # rcnn_list = ['module.RCNN_cls_score_layers.0.weight', 'module.RCNN_bbox_pred_layers.0.weight',\
-    #              'module.RCNN_cls_score_layers.0.bias', 'module.RCNN_bbox_pred_layers.0.bias']
     for name, param in model.named_parameters():
-        #print(name)
         if param.requires_grad:
             if '.1.weight' in name or '.1.bias' in name:
                 continue
-            #print('grad shape: ',param.grad.data.shape, name)
             shape = param.grad.data.shape
             if len(shape) > 2:
                 add_num1,add_num2 = add_filter_num2(shape[0],shape[1])
@@ -138,29 +113,16 @@ def _smooth_l1_loss(bbox_pred, bbox_targets, bbox_inside_weights, bbox_outside_w
     #print(bbox_pred, bbox_targets, bbox_inside_weights, bbox_outside_weights)
     
     sigma_2 = sigma ** 2
-    #print('dim is: ', sigma)
     box_diff = bbox_pred - bbox_targets
-    #print('dim is: ', sigma_2)
-    #print('bbox_outside_weights is: ', bbox_outside_weights)
     in_box_diff = bbox_inside_weights * box_diff
     abs_in_box_diff = torch.abs(in_box_diff)
     smoothL1_sign = (abs_in_box_diff < 1. / sigma_2).detach().float()
-    #print('smoothL1_sign shape is: ', smoothL1_sign)
-    #print(torch.pow(in_box_diff, 2) * (sigma_2 / 2.) * smoothL1_sign )
 
     in_loss_box = torch.pow(in_box_diff, 2) * (sigma_2 / 2.) * smoothL1_sign \
                   + (abs_in_box_diff - (0.5 / sigma_2)) * (1. - smoothL1_sign)
-    #print('in_loss_box shape is: ', in_loss_box)
-    #print('bbox_outside_weights shape is: ', bbox_outside_weights)
     out_loss_box = bbox_outside_weights * in_loss_box
-    #print('out_loss_box shape is: ', out_loss_box)
-    #loss_box = out_loss_box
-    #print('loss box pre is: ', loss_box)
     for i in sorted(dim, reverse=True):
-      #print('sum i: ', i,out_loss_box)
-
       out_loss_box = out_loss_box.sum(i)
-      #print('out_loss_box is: ', out_loss_box)
     out_loss_box = out_loss_box.mean()
     return out_loss_box
 

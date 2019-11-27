@@ -12,7 +12,7 @@ CHECKPOINT=13331
 
 ### Uncomment the datasest to test
 datasets_test=LISA
-datasets_list='KITTIVOC widerface pascal_voc_0712 Kitchen LISA deeplesion coco clipart comic watercolor dota'
+datasets_list='KITTI widerface pascal_voc_0712 Kitchen LISA deeplesion coco clipart comic watercolor dota'
 
 CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=${GPU_ID} \
 python test_universal.py \
@@ -25,4 +25,4 @@ python test_universal.py \
 --num_adapters ${num_adapters} \
 --less_blocks ${less_blocks} \
 --datasets_list ${datasets_list} \
---batch_size ${batch_size}
+--bs ${batch_size}

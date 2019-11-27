@@ -29,7 +29,7 @@ from model.nms.nms_wrapper import nms
 from model.rpn.bbox_transform import bbox_transform_inv
 from model.utils.net_utils import save_net, load_net, vis_detections
 from model.faster_rcnn.resnet_uni import resnet
-from model.faster_rcnn.SEResNet_Data_Attention import Datasets_Attention
+from model.faster_rcnn.DAResNet import Domain_Attention
 from datasets.datasets_info import univ_info
 
 import pdb
@@ -131,7 +131,7 @@ if __name__ == '__main__':
 
   np.random.seed(cfg.RNG_SEED)
 
-  # cfg.datasets_list = ['KITTIVOC','widerface','pascal_voc_0712','Kitchen','LISA']
+  # cfg.datasets_list = ['KITTI','widerface','pascal_voc_0712','Kitchen','LISA']
   cfg.datasets_list = args.datasets_list
   cfg.imdb_name_list                = univ_info(cfg.datasets_list, 'imdb_name', test=True)
   cfg.imdbval_name_list             = univ_info(cfg.datasets_list, 'imdbval_name', test=True)
@@ -180,8 +180,8 @@ if __name__ == '__main__':
   if args.set_cfgs is not None:
     cfg_from_list(args.set_cfgs)
 
-  print('Using config:')
-  pprint.pprint(cfg)
+#   print('Using config:')
+#   pprint.pprint(cfg)
   cfg.DEBUG = False
   cfg.fix_bn = False
   cfg.POOLING_SIZE_H = 7
@@ -213,7 +213,7 @@ if __name__ == '__main__':
     'faster_rcnn_universal_{}_{}_{}.pth'.format(args.checksession, args.checkepoch, args.checkpoint))
 
   # initilize the network here.
-  fasterRCNN = Datasets_Attention(imdb.classes, 50, pretrained=False, class_agnostic=args.class_agnostic,\
+  fasterRCNN = Domain_Attention(imdb.classes, 50, pretrained=False, class_agnostic=args.class_agnostic,\
                                 rpn_batchsize_list=cfg.train_batchsize_list)
   fasterRCNN.create_architecture()
 

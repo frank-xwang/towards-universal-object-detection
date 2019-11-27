@@ -114,29 +114,24 @@ class imdb(object):
   def append_flipped_images(self):
     num_images = self.num_images
     widths = self._get_widths()
-    #print('roidb is: ',self.roidb[0])
     for i in range(num_images):
       boxes = self.roidb[i]['boxes'].copy()
       oldx1 = boxes[:, 0].copy()
       oldx2 = boxes[:, 2].copy()
-      ## Wrote by Xudong Wang
-      if cfg.dataset == 'widerface' or cfg.dataset == 'citypersons' or cfg.dataset == 'KAISTVOC' or cfg.dataset == 'caltech' \
-        or cfg.dataset == 'dota' or cfg.dataset == 'deeplesion':
+      if cfg.dataset == 'widerface' or cfg.dataset == 'dota' or cfg.dataset == 'deeplesion':
         boxes[:, 0] = widths[i] - oldx2
         boxes[:, 2] = widths[i] - oldx1
-      ## End
       else:
         boxes[:, 0] = widths[i] - oldx2 - 1
         boxes[:, 2] = widths[i] - oldx1 - 1
       index = np.where((boxes[:, 2] >= boxes[:, 0])==False)
 
-      ## Wrote by Xudong Wang
       if len(index[0]) != 0:
-        print('error, original boxes is: ',self.roidb[i]['boxes'][index[0]])
-        print('width is: ', widths[i])
-        #print('image is: ', self.roidb[i])
-        print('image is: ',self.image_path_at(i))
+        print('annotation error in image: ',self.image_path_at(i))
+        print('original boxes is: ',self.roidb[i]['boxes'][index[0]])
         print('flipped boxes is: ', boxes[index[0]])
+        print('width is: ', widths[i])
+        
         for j in index[0]:
           if boxes[j,0] > 60000:
             boxes[j,0] = 0
@@ -145,8 +140,7 @@ class imdb(object):
           else:
             boxes[j,2] = boxes[j,0] + 1
             boxes[j,3] = boxes[j,1] + 1
-          print('optimized boxes is: ', boxes[index[0]])
-      ## end
+          print('manually corrected boxes is: ', boxes[index[0]])
 
       assert (boxes[:, 2] >= boxes[:, 0]).all()
       entry = {'boxes': boxes,

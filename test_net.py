@@ -167,7 +167,7 @@ if __name__ == '__main__':
       # 30, 42, 60, 84, 120, 168, 240
       args.set_cfgs = ['ANCHOR_SCALES', '[2.72, 3.81, 5.45, 7.64, 10.9, 15.27, 21.8, 32]', 'ANCHOR_RATIOS', '[1,2]', 'MAX_NUM_GT_BOXES', '20']
       args.set_cfgs = ['ANCHOR_SCALES', '[0.75, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24, 30]', 'ANCHOR_RATIOS', '[1, 2]', 'MAX_NUM_GT_BOXES', '30']
-  elif args.dataset == "KITTIVOC":
+  elif args.dataset == "KITTI":
       args.imdb_name = "kittivoc_val"
       args.imdbval_name = "kittivoc_val"
       cfg.TEST.FG_THRESH = 0.5
@@ -325,7 +325,7 @@ if __name__ == '__main__':
     'faster_rcnn_{}_{}_{}.pth'.format(args.checksession, args.checkepoch, args.checkpoint))
 
   # initilize the network here.
-  if args.dataset == "KITTIVOC":
+  if args.dataset == "KITTI":
     cfg.TRAIN.RPN_BATCHSIZE = 256 # num of rois fot training rpn
     cfg.TRAIN.BATCH_SIZE = 128 # num of rois for training rcnn
   if args.dataset == "caltech":

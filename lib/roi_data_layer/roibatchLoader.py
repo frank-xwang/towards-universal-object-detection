@@ -222,7 +222,7 @@ class roibatchLoader(data.Dataset):
         elif ratio > 1:
             # this means that data_width > data_height
             # if the image need to crop.
-            if 'caltech' in self.datasets_name or 'KITTIVOC' in self.datasets_name:
+            if 'caltech' in self.datasets_name or 'KITTI' in self.datasets_name:
                 #print(data[0], data[0].shape)
                 padding_data = torch.FloatTensor(data_height, \
                                                 int(np.ceil(data_height * ratio)), 3).zero_()

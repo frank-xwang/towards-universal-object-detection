@@ -279,10 +279,6 @@ if __name__ == '__main__':
       cfg.TRAIN.SCALES=(720,)
       cfg.sample_mode = 'bootstrap' # use bootstrap or ramdom as sampling method
       cfg.TRAIN.USE_ALL_GT = True # choose true if want to exclude all proposals overlap with 'people' larger than 0.3
-<<<<<<< HEAD
-=======
-      cfg.ignore_people = False # ignore people, all proposals overlap with 'people' larger than 0.3 will be igonored
->>>>>>> 793eeda709a4483589939795954491531204c768
       cfg.use_coco_igonore = True
       cfg.filter_empty = True # whether filter 0 gt images
       cfg.DEBUG = False # set as True if debug whether 'people' is ignored
@@ -290,7 +286,7 @@ if __name__ == '__main__':
       # 30, 42, 60, 84, 120, 168, 240 width
       args.set_cfgs = ['ANCHOR_SCALES', '[0.75, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24, 30]', 'ANCHOR_RATIOS', '[1, 2]', 'MAX_NUM_GT_BOXES', '30']
 
-  elif args.dataset == "KITTIVOC":
+  elif args.dataset == "KITTI":
       args.imdb_name = "kittivoc_train"
       args.imdbval_name = "kittivoc_val"
       cfg.TRAIN.USE_FLIPPED = True
@@ -543,7 +539,7 @@ if __name__ == '__main__':
     cfg.CUDA = True
 
   # initilize the network here.
-  if args.dataset == "KITTIVOC":
+  if args.dataset == "KITTI":
     cfg.TRAIN.RPN_BATCHSIZE = 256 # num of rois fot training rpn
     cfg.TRAIN.BATCH_SIZE = 128 # num of rois for training rcnn
   if args.dataset == "caltech":

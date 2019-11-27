@@ -7,9 +7,9 @@ from model.utils.config import cfg
 import torch
 from model.faster_rcnn.se_module_vector import SELayer
 
-class DatasetsAttention(nn.Module):
+class DomainAttention(nn.Module):
     def __init__(self, planes, reduction=16, nclass_list=None, fixed_block=False):
-        super(DatasetsAttention, self).__init__()
+        super(DomainAttention, self).__init__()
         self.planes = planes
         num_adapters = cfg.num_adapters
         if num_adapters == 0:
@@ -42,7 +42,6 @@ class DatasetsAttention(nn.Module):
             SELayers_Matrix = self.SE_Layers[0](x).view(b, c, 1, 1)
             SELayers_Matrix = self.sigmoid(SELayers_Matrix)
         else:
-            #SELayers_Matrix_ = self.SE_Layers[cfg.cls_ind](x).view(b, c, 1, 1)
             weight = self.fc_1(self.avg_pool(x).view(b, c))
             weight = self.softmax(weight).view(b, self.n_datasets, 1)
             for i, SE_Layer in enumerate(self.SE_Layers):

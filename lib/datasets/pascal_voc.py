@@ -44,12 +44,6 @@ class pascal_voc(imdb):
         self._devkit_path = self._get_default_path() if devkit_path is None \
             else devkit_path
         self._data_path = os.path.join(self._devkit_path, 'VOC' + self._year)
-        self._classes = ('__background__', 'person')#, 'bicycle')
-                        # 'aeroplane', 'bicycle', 'bird', 'boat',
-                        # 'bottle', 'bus', 'car', 'cat', 'chair',
-                        # 'cow', 'diningtable', 'dog', 'horse',
-                        # 'motorbike', 'person', 'pottedplant',
-                        # 'sheep', 'sofa', 'train', 'tvmonitor')
         self._classes = ('__background__',  # always index 0
                           'aeroplane', 'bicycle', 'bird', 'boat',
                           'bottle', 'bus', 'car', 'cat', 'chair',
@@ -57,7 +51,7 @@ class pascal_voc(imdb):
                           'motorbike', 'person', 'pottedplant',
                           'sheep', 'sofa', 'train', 'tvmonitor')
         self._class_to_ind = dict(zip(self.classes, xrange(self.num_classes)))
-        print(self._class_to_ind)
+        print('class name and index: ', self._class_to_ind)
         self._image_ext = '.jpg'
         self._image_index = self._load_image_set_index()
         # Default to roidb handler
@@ -109,19 +103,19 @@ class pascal_voc(imdb):
         # self._devkit_path + /VOCdevkit2007/VOC2007/ImageSets/Main/val.txt
         image_set_file = os.path.join(self._data_path, 'ImageSets', 'Main',
                                       self._image_set + '.txt')
-        print('image_set_file of pascal voc is: ', image_set_file)
+        print('image_set_file loaded from: ', image_set_file)
         assert os.path.exists(image_set_file), \
             'Path does not exist: {}'.format(image_set_file)
         with open(image_set_file) as f:
             image_index = [x.strip() for x in f.readlines()]
-        print('image_index size of pascal voc is: ', len(image_index))
+        print('samples number is: ', len(image_index))
         return image_index
 
     def _get_default_path(self):
         """
         Return the default path where PASCAL VOC is expected to be installed.
         """
-        return os.path.join(cfg.DATA_DIR, 'VOCdevkit' + self._year)
+        return os.path.join(cfg.DATA_DIR, 'VOC0712')
 
     def gt_roidb(self):
         """

@@ -13,29 +13,21 @@ import math
 import torch.utils.model_zoo as model_zoo
 import pdb
 import torchvision
-from model.faster_rcnn.dataset_attention_module import DatasetsAttention
+from model.faster_rcnn.domain_attention_module import DomainAttention
 
-__all__ = ['DataAttentionResNet', 'data_att_resnet18', 'data_att_resnet34', 'data_att_resnet50', 'data_att_resnet101',
-       'data_att_resnet152']
-
-model_urls = {
-  'resnet18': 'https://s3.amazonaws.com/pytorch/models/resnet18-5c106cde.pth',
-  'resnet34': 'https://s3.amazonaws.com/pytorch/models/resnet34-333f7ec4.pth',
-  'resnet50': 'https://s3.amazonaws.com/pytorch/models/resnet50-19c8e357.pth',
-  'resnet101': 'https://s3.amazonaws.com/pytorch/models/resnet101-5d3b4d8f.pth',
-  'resnet152': 'https://s3.amazonaws.com/pytorch/models/resnet152-b121ed2d.pth',
-}
+__all__ = ['DAResNet', 'da_resnet18', 'da_resnet34', 'da_resnet50', 'da_resnet101',
+       'da_resnet152']
 
 def conv3x3(in_planes, out_planes, stride=1):
   "3x3 convolution with padding"
   return nn.Conv2d(in_planes, out_planes, kernel_size=3, stride=stride,
            padding=1, bias=False)
 
-class SEBasicBlock(nn.Module):
+class DABasicBlock(nn.Module):
   expansion = 1
 
   def __init__(self, inplanes, planes, stride=1, downsample=None, fixed_block=False):
-    super(SEBasicBlock, self).__init__()
+    super(DABasicBlock, self).__init__()
     self.conv1 = conv3x3(inplanes, planes, stride)
     if cfg.use_mux: self.bn1 = nn.ModuleList([nn.BatchNorm2d(planes) for datasets in cfg.num_classes])
     else: self.bn1 = nn.BatchNorm2d(planes)
@@ -43,7 +35,7 @@ class SEBasicBlock(nn.Module):
     self.conv2 = conv3x3(planes, planes)
     if cfg.use_mux: self.bn2 = nn.ModuleList([nn.BatchNorm2d(planes) for datasets in cfg.num_classes])
     else: self.bn2 = nn.BatchNorm2d(planes)
-    self.datasets_attention = DatasetsAttention(planes, reduction=16, nclass_list=cfg.num_classes, fixed_block=fixed_block)
+    self.domain_attention = DomainAttention(planes, reduction=16, nclass_list=cfg.num_classes, fixed_block=fixed_block)
     self.downsample = downsample
     self.stride = stride
 
@@ -59,7 +51,7 @@ class SEBasicBlock(nn.Module):
     if cfg.use_mux: out = self.bn2[cfg.cls_ind](out)
     else: out = self.bn2(out)
 
-    out = self.datasets_attention(out)
+    out = self.domain_attention(out)
 
     if self.downsample is not None:
       residual = self.downsample(x)
@@ -68,11 +60,11 @@ class SEBasicBlock(nn.Module):
     out = self.relu(out)
     return out
 
-class SEBottleneck(nn.Module):
+class DABottleneck(nn.Module):
   expansion = 4
 
   def __init__(self, inplanes, planes, stride=1, downsample=None, fixed_block=False):
-    super(SEBottleneck, self).__init__()
+    super(DABottleneck, self).__init__()
     self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=1, bias=False)
     if cfg.use_mux: self.bn1 = nn.ModuleList([nn.BatchNorm2d(planes) for datasets in cfg.num_classes])
     else: self.bn1 = nn.BatchNorm2d(planes)
@@ -83,7 +75,7 @@ class SEBottleneck(nn.Module):
     self.conv3 = nn.Conv2d(planes, planes * 4, kernel_size=1, bias=False)
     if cfg.use_mux: self.bn3 = nn.ModuleList([nn.BatchNorm2d(planes * 4) for datasets in cfg.num_classes])
     else: self.bn3 = nn.BatchNorm2d(planes * 4)
-    self.datasets_attention = DatasetsAttention(planes * 4, reduction=16, nclass_list=cfg.num_classes, fixed_block=fixed_block)
+    self.domain_attention = DomainAttention(planes * 4, reduction=16, nclass_list=cfg.num_classes, fixed_block=fixed_block)
     self.relu = nn.ReLU(inplace=True)
     self.downsample = downsample
     self.stride = stride
@@ -105,7 +97,7 @@ class SEBottleneck(nn.Module):
     if cfg.use_mux: out = self.bn3[cfg.cls_ind](out)
     else: out = self.bn3(out)
 
-    out = self.datasets_attention(out)
+    out = self.domain_attention(out)
 
     if self.downsample is not None:
       residual = self.downsample(x)
@@ -125,11 +117,11 @@ class BnMux(nn.Module):
         out = self.bn[cfg.cls_ind](x)
         return out
         
-class DataAttentionResNet(nn.Module):
+class DAResNet(nn.Module):
   def __init__(self, block, layers, num_classes=1000):
     self.inplanes = 64
     fixed_block = False
-    super(DataAttentionResNet, self).__init__()
+    super(DAResNet, self).__init__()
     self.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3,
                  bias=False)                                        # rcnn.base.0
     self.bn1 = nn.BatchNorm2d(64)                                   # rcnn.base.1
@@ -168,7 +160,6 @@ class DataAttentionResNet(nn.Module):
     # self.layer4 = self._make_layer(block, 512, layers[3], stride=1)
     self.avgpool = nn.AvgPool2d(7)
     # block.expansion is 1
-    #self.fc = nn.ModuleList([nn.Linear(512 * block.expansion, num_classes) for num_class in cfg.num_classes])
     self.fc = nn.Linear(512 * block.expansion, num_classes)
 
     for m in self.modules():
@@ -187,7 +178,6 @@ class DataAttentionResNet(nn.Module):
           nn.Conv2d(self.inplanes, planes * block.expansion,
                 kernel_size=1, stride=stride, bias=False),
           BnMux(planes * block.expansion),
-          #nn.BatchNorm2d(planes * block.expansion),
         )
       else:
         downsample = nn.Sequential(
@@ -224,61 +214,50 @@ class DataAttentionResNet(nn.Module):
 
     x = self.avgpool(x)
     x = x.view(x.size(0), -1)
-    #x = self.fc[cfg.cls_ind](x)
     x = self.fc(x)
     return x
 
-def data_att_resnet18(pretrained=False):
+def da_resnet18(pretrained=False):
   """Constructs a ResNet-18 model.
   Args:
     pretrained (bool): If True, returns a model pre-trained on ImageNet
   """
-  model = DataAttentionResNet(SEBasicBlock, [2, 2, 2, 2])
-  if pretrained:
-    model.load_state_dict(model_zoo.load_url(model_urls['resnet18']))
+  model = DAResNet(DABasicBlock, [2, 2, 2, 2])
   return model
 
-def data_att_resnet34(pretrained=False):
+def da_resnet34(pretrained=False):
   """Constructs a ResNet-34 model.
   Args:
     pretrained (bool): If True, returns a model pre-trained on ImageNet
   """
-  model = DataAttentionResNet(SEBasicBlock, [3, 4, 6, 3])
-  if pretrained:
-    model.load_state_dict(model_zoo.load_url(model_urls['resnet34']))
+  model = DAResNet(DABasicBlock, [3, 4, 6, 3])
   return model
 
-def data_att_resnet50(pretrained=False):
+def da_resnet50(pretrained=False):
   """Constructs a ResNet-50 model.
   Args:
     pretrained (bool): If True, returns a model pre-trained on ImageNet
   """
-  model = DataAttentionResNet(SEBottleneck, [3, 4, 6, 3])
-#   if pretrained:
-#     model.load_state_dict(model_zoo.load_url(model_urls['resnet50']))
+  model = DAResNet(DABottleneck, [3, 4, 6, 3])
   return model
 
-def data_att_resnet101(pretrained=False):
+def da_resnet101(pretrained=False):
   """Constructs a ResNet-101 model.
   Args:
     pretrained (bool): If True, returns a model pre-trained on ImageNet
   """
-  model = DataAttentionResNet(SEBottleneck, [3, 4, 23, 3])
-  if pretrained:
-    model.load_state_dict(model_zoo.load_url(model_urls['resnet101']))
+  model = DAResNet(DABottleneck, [3, 4, 23, 3])
   return model
 
-def data_att_resnet152(pretrained=False):
+def da_resnet152(pretrained=False):
   """Constructs a ResNet-152 model.
   Args:
     pretrained (bool): If True, returns a model pre-trained on ImageNet
   """
-  model = DataAttentionResNet(SEBottleneck, [3, 8, 36, 3])
-  if pretrained:
-    model.load_state_dict(model_zoo.load_url(model_urls['resnet152']))
+  model = DAResNet(DABottleneck, [3, 8, 36, 3])
   return model
 
-class Datasets_Attention(_fasterRCNN):
+class Domain_Attention(_fasterRCNN):
   def __init__(self, classes, num_layers=101, pretrained=False, class_agnostic=False, rpn_batchsize_list=None):
     self.model_path = 'data/pretrained_model/se_resnet' + str(num_layers) + '.pth.tar'
     if num_layers == 18:
@@ -294,7 +273,7 @@ class Datasets_Attention(_fasterRCNN):
     _fasterRCNN.__init__(self, classes, class_agnostic,rpn_batchsize_list)
 
   def _init_modules(self):
-    resnet = eval('data_att_resnet' + str(self.num_layers))()
+    resnet = eval('da_resnet' + str(self.num_layers))()
 
     if self.pretrained == True:
       state_dict = torch.load(self.model_path)['state_dict']     
@@ -307,7 +286,7 @@ class Datasets_Attention(_fasterRCNN):
         for n in range(len(k_list)-1):
           if n == 0: continue
           if 'se' == k_list[n]: 
-            se_name = name + 'datasets_attention.SE_Layers.'
+            se_name = name + 'domain_attention.SE_Layers.'
           name += k_list[n] + '.'
         k_new = name + k_list[-1]
         if k_new in resnet.state_dict():
@@ -332,20 +311,19 @@ class Datasets_Attention(_fasterRCNN):
           if k_new in resnet.state_dict():
             new_state_dict[k_new] = v
         for id in range(2):
-          se_weight_name = k_list[1] + '.' + k_list[2] + '.datasets_attention.weight_' + str(id+1)
+          se_weight_name = k_list[1] + '.' + k_list[2] + '.domain_attention.weight_' + str(id+1)
           if se_weight_name in resnet.state_dict():
             new_state_dict[se_weight_name] = resnet.state_dict()[se_weight_name]
             #print(se_weight_name)
-          se_bias_name = k_list[1] + '.' + k_list[2] + '.datasets_attention.bias_' + str(id+1)
+          se_bias_name = k_list[1] + '.' + k_list[2] + '.domain_attention.bias_' + str(id+1)
           if se_bias_name in resnet.state_dict():
             new_state_dict[se_bias_name] = resnet.state_dict()[se_bias_name]
-          se_weight_name = k_list[1] + '.' + k_list[2] + '.datasets_attention.fc_'
+          se_weight_name = k_list[1] + '.' + k_list[2] + '.domain_attention.fc_'
           for appendix in ['1.weight','1.bias','2.weight','2.bias','3.weight','3.bias',\
                            '4.weight','4.bias','5.weight','5.bias']:
             final_name = se_weight_name + appendix
             if final_name in resnet.state_dict():
               new_state_dict[final_name] = resnet.state_dict()[final_name]
-            #print(se_bias_name)
 
         if 'fc.0.' in k:
           for n in range(len(cfg.num_classes)):

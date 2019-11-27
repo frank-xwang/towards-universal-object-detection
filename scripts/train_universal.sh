@@ -1,11 +1,11 @@
-GPU_ID=0,1,2,3,4,5,6,7
-BATCH_SIZE=16
+GPU_ID=8,9
+BATCH_SIZE=4
 net=da_res50
 WORKER_NUMBER=4
-LEARNING_RATE=0.01
+LEARNING_RATE=0.01 # lr=0.01 for BATCH_SIZE=16
 DECAY_STEP=10
-SAVE_SESSION=11083
-epochs=20
+SAVE_SESSION=11
+epochs=14
 backward_together=0 # 0: independent; 1: together
 USE_FLIPPED=1 # choose 1 for using flipped images, 0 for don't
 datasets=universal
@@ -16,8 +16,10 @@ use_bn_mux=False
 update_chosen=False
 randomly_chosen_datasets=True
 warmup_steps=0
-num_adapters=11
+num_adapters=2
 less_blocks=False
+datasets_list='KITTI widerface pascal_voc_0712 Kitchen LISA deeplesion coco clipart comic watercolor dota'
+datasets_list='KITTI widerface'
 # resume=True
 # checkepoch=7
 # checksession=11083
@@ -41,6 +43,7 @@ CUDA_VISIBLE_DEVICES=${GPU_ID} python universal_model.py \
                     --update_chosen ${update_chosen} \
                     --warmup_steps ${warmup_steps} \
                     --backward_together ${backward_together} \
+                    --datasets_list ${datasets_list}
                     # --r ${resume} \
                     # --checksession ${checksession} \
                     # --checkpoint ${CHECKPOINT} \

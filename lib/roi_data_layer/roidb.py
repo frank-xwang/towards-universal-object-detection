@@ -76,10 +76,10 @@ def rank_roidb_ratio(roidb,imdb_names):
 
 def filter_roidb(roidb):
     # filter the image without bounding box.
-    print('before filtering, there are %d images...' % (len(roidb)))
+    print('before filtering, contains %d images...' % (len(roidb)))
     i = 0
     while i < len(roidb):
-      if cfg.imdb_name == "KITTIVOC":
+      if cfg.imdb_name == "KITTI":
         roidb[i]['boxes'] +=1
       if (len(roidb[i]['boxes']) == 0):
         if cfg.filter_empty:
@@ -106,7 +106,7 @@ def filter_roidb(roidb):
         continue
       i+=1
 
-    print('after filtering, there are %d images...' % (len(roidb)))
+    print('after filtering, contains %d images...' % (len(roidb)))
     return roidb
 
 def combined_roidb(imdb_names, training=True):

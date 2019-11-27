@@ -13,33 +13,29 @@ import math
 import torch.utils.model_zoo as model_zoo
 import pdb
 import torchvision
+from model.faster_rcnn.domain_attention_module import DomainAttention
 
-__all__ = ['ResNet', 'resnet18', 'resnet34', 'resnet50', 'resnet101',
-       'resnet152']
-
-model_urls = {
-  'resnet18': 'https://s3.amazonaws.com/pytorch/models/resnet18-5c106cde.pth',
-  'resnet34': 'https://s3.amazonaws.com/pytorch/models/resnet34-333f7ec4.pth',
-  'resnet50': 'https://s3.amazonaws.com/pytorch/models/resnet50-19c8e357.pth',
-  'resnet101': 'https://s3.amazonaws.com/pytorch/models/resnet101-5d3b4d8f.pth',
-  'resnet152': 'https://s3.amazonaws.com/pytorch/models/resnet152-b121ed2d.pth',
-}
+__all__ = ['DAResNet', 'da_resnet18', 'da_resnet34', 'da_resnet50', 'da_resnet101',
+       'da_resnet152']
 
 def conv3x3(in_planes, out_planes, stride=1):
   "3x3 convolution with padding"
   return nn.Conv2d(in_planes, out_planes, kernel_size=3, stride=stride,
            padding=1, bias=False)
 
-class BasicBlock(nn.Module):
+class DABasicBlock(nn.Module):
   expansion = 1
 
-  def __init__(self, inplanes, planes, stride=1, downsample=None):
-    super(BasicBlock, self).__init__()
+  def __init__(self, inplanes, planes, stride=1, downsample=None, fixed_block=False):
+    super(DABasicBlock, self).__init__()
     self.conv1 = conv3x3(inplanes, planes, stride)
-    self.bn1 = nn.ModuleList([nn.BatchNorm2d(planes) for datasets in cfg.num_classes])
+    if cfg.use_mux: self.bn1 = nn.ModuleList([nn.BatchNorm2d(planes) for datasets in cfg.num_classes])
+    else: self.bn1 = nn.BatchNorm2d(planes)
     self.relu = nn.ReLU(inplace=True)
     self.conv2 = conv3x3(planes, planes)
-    self.bn2 = nn.ModuleList([nn.BatchNorm2d(planes) for datasets in cfg.num_classes])
+    if cfg.use_mux: self.bn2 = nn.ModuleList([nn.BatchNorm2d(planes) for datasets in cfg.num_classes])
+    else: self.bn2 = nn.BatchNorm2d(planes)
+    self.domain_attention = DomainAttention(planes, reduction=16, nclass_list=cfg.num_classes, fixed_block=fixed_block)
     self.downsample = downsample
     self.stride = stride
 
@@ -47,32 +43,39 @@ class BasicBlock(nn.Module):
     residual = x
 
     out = self.conv1(x)
-    out = self.bn1[cfg.cls_ind](out)
+    if cfg.use_mux: out = self.bn1[cfg.cls_ind](out)
+    else: out = self.bn1(out)
     out = self.relu(out)
 
     out = self.conv2(out)
-    out = self.bn2[cfg.cls_ind](out)
+    if cfg.use_mux: out = self.bn2[cfg.cls_ind](out)
+    else: out = self.bn2(out)
+
+    out = self.domain_attention(out)
 
     if self.downsample is not None:
       residual = self.downsample(x)
 
     out += residual
     out = self.relu(out)
-
     return out
 
-class Bottleneck(nn.Module):
+class DABottleneck(nn.Module):
   expansion = 4
 
-  def __init__(self, inplanes, planes, stride=1, downsample=None):
-    super(Bottleneck, self).__init__()
-    self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=1, stride=stride, bias=False) # change
-    self.bn1 = nn.ModuleList([nn.BatchNorm2d(planes) for datasets in cfg.num_classes])
-    self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, stride=1, # change
+  def __init__(self, inplanes, planes, stride=1, downsample=None, fixed_block=False):
+    super(DABottleneck, self).__init__()
+    self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=1, bias=False)
+    if cfg.use_mux: self.bn1 = nn.ModuleList([nn.BatchNorm2d(planes) for datasets in cfg.num_classes])
+    else: self.bn1 = nn.BatchNorm2d(planes)
+    self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, stride=stride, # change
                  padding=1, bias=False)
-    self.bn2 = nn.ModuleList([nn.BatchNorm2d(planes) for datasets in cfg.num_classes])
+    if cfg.use_mux: self.bn2 = nn.ModuleList([nn.BatchNorm2d(planes) for datasets in cfg.num_classes])
+    else: self.bn2 = nn.BatchNorm2d(planes)
     self.conv3 = nn.Conv2d(planes, planes * 4, kernel_size=1, bias=False)
-    self.bn3 = nn.ModuleList([nn.BatchNorm2d(planes * 4) for datasets in cfg.num_classes])
+    if cfg.use_mux: self.bn3 = nn.ModuleList([nn.BatchNorm2d(planes * 4) for datasets in cfg.num_classes])
+    else: self.bn3 = nn.BatchNorm2d(planes * 4)
+    self.domain_attention = DomainAttention(planes * 4, reduction=16, nclass_list=cfg.num_classes, fixed_block=fixed_block)
     self.relu = nn.ReLU(inplace=True)
     self.downsample = downsample
     self.stride = stride
@@ -81,22 +84,26 @@ class Bottleneck(nn.Module):
     residual = x
 
     out = self.conv1(x)
-    out = self.bn1[cfg.cls_ind](out)
+    if cfg.use_mux: out = self.bn1[cfg.cls_ind](out)
+    else: out = self.bn1(out)
     out = self.relu(out)
 
     out = self.conv2(out)
-    out = self.bn2[cfg.cls_ind](out)
+    if cfg.use_mux: out = self.bn2[cfg.cls_ind](out)
+    else: out = self.bn2(out)
     out = self.relu(out)
 
     out = self.conv3(out)
-    out = self.bn3[cfg.cls_ind](out)
+    if cfg.use_mux: out = self.bn3[cfg.cls_ind](out)
+    else: out = self.bn3(out)
+
+    out = self.domain_attention(out)
 
     if self.downsample is not None:
       residual = self.downsample(x)
 
     out += residual
     out = self.relu(out)
-
     return out
 
 class BnMux(nn.Module):
@@ -110,24 +117,49 @@ class BnMux(nn.Module):
         out = self.bn[cfg.cls_ind](x)
         return out
         
-class ResNet(nn.Module):
+class DAResNet(nn.Module):
   def __init__(self, block, layers, num_classes=1000):
     self.inplanes = 64
-    super(ResNet, self).__init__()
+    fixed_block = False
+    super(DAResNet, self).__init__()
     self.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3,
                  bias=False)                                        # rcnn.base.0
     self.bn1 = nn.BatchNorm2d(64)                                   # rcnn.base.1
     self.relu = nn.ReLU(inplace=True)                               # 2
     self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=0, ceil_mode=True) # 3
-    self.layer1 = self._make_layer(block, 64, layers[0])            # rcnn.base.4
-    self.layer2 = self._make_layer(block, 128, layers[1], stride=2) # rcnn.base.5
-    self.layer3 = self._make_layer(block, 256, layers[2], stride=2) # rcnn.base.6
-    self.layer4 = self._make_layer(block, 512, layers[3], stride=2) # rcnn.top
+    cfg.start_fix = False
+    if cfg.RESNET.FIXED_BLOCKS >= 1: fixed_block = True
+    else:
+      cfg.start_fix = True
+      cfg.layer_index = 0
+      cfg.block_id = 1
+    self.layer1 = self._make_layer(block, 64, layers[0], fixed_block=fixed_block)              # rcnn.base.4
+    fixed_block = False
+    if cfg.RESNET.FIXED_BLOCKS >= 2: fixed_block = True
+    else: 
+      cfg.start_fix = True
+      cfg.layer_index = 0
+      cfg.block_id = 2
+    self.layer2 = self._make_layer(block, 128, layers[1], stride=2, fixed_block=fixed_block) # rcnn.base.5
+    fixed_block = False
+    if cfg.RESNET.FIXED_BLOCKS >= 3: fixed_block = True
+    else:
+      cfg.start_fix = True
+      cfg.layer_index = 0
+      cfg.block_id = 3
+    self.layer3 = self._make_layer(block, 256, layers[2], stride=2, fixed_block=fixed_block) # rcnn.base.6
+    fixed_block = False
+    if cfg.RESNET.FIXED_BLOCKS >= 4: fixed_block = True
+    else: 
+      cfg.start_fix = True
+      cfg.layer_index = 0
+      cfg.block_id = 4
+    self.layer4 = self._make_layer(block, 512, layers[3], stride=2, fixed_block=fixed_block)   # rcnn.top
+    fixed_block = False
     # it is slightly better whereas slower to set stride = 1
     # self.layer4 = self._make_layer(block, 512, layers[3], stride=1)
     self.avgpool = nn.AvgPool2d(7)
     # block.expansion is 1
-    #self.fc = nn.ModuleList([nn.Linear(512 * block.expansion, num_classes) for num_class in cfg.num_classes])
     self.fc = nn.Linear(512 * block.expansion, num_classes)
 
     for m in self.modules():
@@ -138,14 +170,14 @@ class ResNet(nn.Module):
         m.weight.data.fill_(1)
         m.bias.data.zero_()
 
-  def _make_layer(self, block, planes, blocks, stride=1):
+  def _make_layer(self, block, planes, blocks, stride=1, fixed_block=False):
     downsample = None
     if stride != 1 or self.inplanes != planes * block.expansion:
       if cfg.use_mux:
         downsample = nn.Sequential(
-            nn.Conv2d(self.inplanes, planes * block.expansion,
-                  kernel_size=1, stride=stride, bias=False),
-            BnMux(planes * block.expansion),
+          nn.Conv2d(self.inplanes, planes * block.expansion,
+                kernel_size=1, stride=stride, bias=False),
+          BnMux(planes * block.expansion),
         )
       else:
         downsample = nn.Sequential(
@@ -155,11 +187,17 @@ class ResNet(nn.Module):
         )
 
     layers = []
-    layers.append(block(self.inplanes, planes, stride, downsample))
+    layers.append(block(self.inplanes, planes, stride, downsample,fixed_block=fixed_block))
+    if cfg.start_fix:
+      cfg.layer_index += 1
     self.inplanes = planes * block.expansion
     for i in range(1, blocks):
-      layers.append(block(self.inplanes, planes))
-
+      if i == blocks - 1:
+        layers.append(block(self.inplanes, planes, fixed_block=fixed_block))
+      else:
+        layers.append(block(self.inplanes, planes, fixed_block=fixed_block))
+      if cfg.start_fix:
+        cfg.layer_index += 1
     return nn.Sequential(*layers)
 
   def forward(self, x):
@@ -170,69 +208,58 @@ class ResNet(nn.Module):
 
     x = self.layer1(x)
     x = self.layer2(x)
+
     x = self.layer3(x)
-    x = self.layer4(x)
+    x = self.layer4(x) 
 
     x = self.avgpool(x)
     x = x.view(x.size(0), -1)
-    #x = self.fc[cfg.cls_ind](x)
     x = self.fc(x)
-
     return x
 
-def resnet18(pretrained=False):
+def da_resnet18(pretrained=False):
   """Constructs a ResNet-18 model.
   Args:
     pretrained (bool): If True, returns a model pre-trained on ImageNet
   """
-  model = ResNet(BasicBlock, [2, 2, 2, 2])
-  if pretrained:
-    model.load_state_dict(model_zoo.load_url(model_urls['resnet18']))
+  model = DAResNet(DABasicBlock, [2, 2, 2, 2])
   return model
 
-def resnet34(pretrained=False):
+def da_resnet34(pretrained=False):
   """Constructs a ResNet-34 model.
   Args:
     pretrained (bool): If True, returns a model pre-trained on ImageNet
   """
-  model = ResNet(BasicBlock, [3, 4, 6, 3])
-  if pretrained:
-    model.load_state_dict(model_zoo.load_url(model_urls['resnet34']))
+  model = DAResNet(DABasicBlock, [3, 4, 6, 3])
   return model
 
-def resnet50(pretrained=False):
+def da_resnet50(pretrained=False):
   """Constructs a ResNet-50 model.
   Args:
     pretrained (bool): If True, returns a model pre-trained on ImageNet
   """
-  model = ResNet(Bottleneck, [3, 4, 6, 3])
-  if pretrained:
-    model.load_state_dict(model_zoo.load_url(model_urls['resnet50']))
+  model = DAResNet(DABottleneck, [3, 4, 6, 3])
   return model
 
-def resnet101(pretrained=False):
+def da_resnet101(pretrained=False):
   """Constructs a ResNet-101 model.
   Args:
     pretrained (bool): If True, returns a model pre-trained on ImageNet
   """
-  model = ResNet(Bottleneck, [3, 4, 23, 3])
-  if pretrained:
-    model.load_state_dict(model_zoo.load_url(model_urls['resnet101']))
+  model = DAResNet(DABottleneck, [3, 4, 23, 3])
   return model
 
-def resnet152(pretrained=False):
+def da_resnet152(pretrained=False):
   """Constructs a ResNet-152 model.
   Args:
     pretrained (bool): If True, returns a model pre-trained on ImageNet
   """
-  model = ResNet(Bottleneck, [3, 8, 36, 3])
-  if pretrained:
-    model.load_state_dict(model_zoo.load_url(model_urls['resnet152']))
+  model = DAResNet(DABottleneck, [3, 8, 36, 3])
   return model
 
-class resnet(_fasterRCNN):
+class Domain_Attention(_fasterRCNN):
   def __init__(self, classes, num_layers=101, pretrained=False, class_agnostic=False, rpn_batchsize_list=None):
-    self.model_path = 'data/pretrained_model/resnet' + str(num_layers) + '_caffe.pth'
+    self.model_path = 'data/pretrained_model/se_resnet' + str(num_layers) + '.pth.tar'
     if num_layers == 18:
       self.dout_base_model = 256
     else:
@@ -246,21 +273,25 @@ class resnet(_fasterRCNN):
     _fasterRCNN.__init__(self, classes, class_agnostic,rpn_batchsize_list)
 
   def _init_modules(self):
-    resnet = eval('resnet' + str(self.num_layers))()
+    resnet = eval('da_resnet' + str(self.num_layers))()
 
     if self.pretrained == True:
-      state_dict = torch.load(self.model_path)     
+      state_dict = torch.load(self.model_path)['state_dict']     
       print("Loading pretrained weights from %s" %(self.model_path))
-      
       new_state_dict = {}
+      
       for k, v in state_dict.items():
         k_list = k.split('.')
         name = ''
         for n in range(len(k_list)-1):
+          if n == 0: continue
+          if 'se' == k_list[n]: 
+            se_name = name + 'domain_attention.SE_Layers.'
           name += k_list[n] + '.'
-        if k in resnet.state_dict():
-          new_state_dict[k] = v
-        elif 'bn' in k and 'layer' in k:
+        k_new = name + k_list[-1]
+        if k_new in resnet.state_dict():
+          new_state_dict[k_new] = v
+        if 'bn' in k and 'layer' in k:
           for n in range(len(cfg.num_classes)):
             current = name + str(n) + '.' + k_list[-1]
             if current in resnet.state_dict():
@@ -270,11 +301,50 @@ class resnet(_fasterRCNN):
             current = name + 'bn.' + str(n) + '.' + k_list[-1]
             if current in resnet.state_dict():
               new_state_dict[current] = v
+        elif '.se.' in k:
+          for n in range(cfg.num_adapters):
+            current = se_name + str(n) + '.' + k_list[-3] + '.' + k_list[-2] + '.' + k_list[-1]
+            #print('se: ',current)
+            if current in resnet.state_dict():
+              new_state_dict[current] = v          
         else:
-          if k in resnet.state_dict():
-            new_state_dict[k] = v
-      resnet.load_state_dict(new_state_dict)
+          if k_new in resnet.state_dict():
+            new_state_dict[k_new] = v
+        for id in range(2):
+          se_weight_name = k_list[1] + '.' + k_list[2] + '.domain_attention.weight_' + str(id+1)
+          if se_weight_name in resnet.state_dict():
+            new_state_dict[se_weight_name] = resnet.state_dict()[se_weight_name]
+            #print(se_weight_name)
+          se_bias_name = k_list[1] + '.' + k_list[2] + '.domain_attention.bias_' + str(id+1)
+          if se_bias_name in resnet.state_dict():
+            new_state_dict[se_bias_name] = resnet.state_dict()[se_bias_name]
+          se_weight_name = k_list[1] + '.' + k_list[2] + '.domain_attention.fc_'
+          for appendix in ['1.weight','1.bias','2.weight','2.bias','3.weight','3.bias',\
+                           '4.weight','4.bias','5.weight','5.bias']:
+            final_name = se_weight_name + appendix
+            if final_name in resnet.state_dict():
+              new_state_dict[final_name] = resnet.state_dict()[final_name]
 
+        if 'fc.0.' in k:
+          for n in range(len(cfg.num_classes)):
+            current = se_name + str(n) + '.' + 'linear1.' + k_list[-1]
+            if current in resnet.state_dict():
+              new_state_dict[current] = v
+        elif 'fc.2.' in k:
+          for n in range(len(cfg.num_classes)):
+            current = se_name + str(n) + '.' + 'linear2.' + k_list[-1]
+            if current in resnet.state_dict():
+              new_state_dict[current] = v
+      for n in range(len(cfg.num_classes)):
+        for tail in ['weight', 'bias']:
+          for mid in ['3.5', '2.3']:
+            current = 'layer' + mid + '.se.' + str(n) + '.seloss.' + tail
+            if current in resnet.state_dict():
+              new_state_dict[current] = resnet.state_dict()[current]
+      resnet.load_state_dict(new_state_dict)
+      checkpoint_tosave = {}
+      checkpoint_tosave['model'] = new_state_dict
+      torch.save(checkpoint_tosave, 'daresnet50_2_full.pth.tar')
     # Build resnet.
     # RCNN_base[0]: resnet.conv1, RCNN_base[1]: resnet.bn1 ......
     self.RCNN_base = nn.Sequential(resnet.conv1, resnet.bn1,resnet.relu,
@@ -312,7 +382,7 @@ class resnet(_fasterRCNN):
       classname = m.__class__.__name__
       if classname.find('BatchNorm') != -1:
         for p in m.parameters(): p.requires_grad=False
-  
+          
     if cfg.fix_bn:
       self.RCNN_base.apply(set_bn_fix)
       self.RCNN_top.apply(set_bn_fix)
@@ -321,6 +391,7 @@ class resnet(_fasterRCNN):
     # Override train so that the training mode is set as we want
     nn.Module.train(self, mode)
     if mode:
+      print('traing in process')
       # Set fixed blocks to be in eval mode
       self.RCNN_base.eval()
       self.RCNN_base[5].train()

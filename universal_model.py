@@ -30,9 +30,8 @@ from model.utils.config import cfg, cfg_from_file, cfg_from_list, get_output_dir
 from model.utils.net_utils import weights_normal_init, save_net, load_net, \
       adjust_learning_rate, save_checkpoint, clip_gradient, update_chosen_se_layer, print_chosen_se_layer
 from model.faster_rcnn.resnet_uni import resnet
-from model.faster_rcnn.SEResNet_univ import seresnet
 from datasets.datasets_info import get_datasets_info
-from model.faster_rcnn.SEResNet_Data_Attention import Datasets_Attention
+from model.faster_rcnn.DAResNet_Save_Model import Domain_Attention
 from datasets.datasets_info import univ_info
 import torch.nn.functional as F
 
@@ -164,7 +163,9 @@ def parse_args():
                         default=0, type=int)    
     parser.add_argument('--rpn_univ', dest='rpn_univ',
                         help='Whether use universal rpn',
-                        default='True', type=str)
+                        default='False', type=str)
+    parser.add_argument('--datasets_list', nargs='+', 
+                    help='datasets list for training', required=True)
     args = parser.parse_args()
     return args                           
 
@@ -215,14 +216,12 @@ if __name__ == '__main__':
     info_name = ['imdb_name','imdbval_name','dataset','imdb_name','USE_FLIPPED','RPN_BATCHSIZE','BATCH_SIZE','RPN_POSITIVE_OVERLAP','RPN_NMS_THRESH',\
         'POOLING_SIZE_H','POOLING_SIZE_W','FG_THRESH','SCALES','sample_mode','VGG_ORIGIN','USE_ALL_GT,ignore_people','filter_empty','DEBUG','set_cfgs']
 
-    args.imdb_name, args.imdbval_name, args.dataset, cfg.imdb_name, cfg.TRAIN.USE_FLIPPED, cfg.TRAIN.RPN_BATCHSIZE, cfg.TRAIN.BATCH_SIZE, \
+    args.imdb_name, args.imdbval_name, args.dataset, cfg.imdb_name, cfg.TRAIN.USE_FLIPPED, cfg.TRAIN.RPN_BATCHSIZE, cfg.TRAIN.BATCH_SIZE, cfg.TEST.BATCH_SIZE,\
     cfg.TRAIN.RPN_POSITIVE_OVERLAP, cfg.TRAIN.RPN_NMS_THRESH, cfg.POOLING_SIZE_H, cfg.POOLING_SIZE_W, cfg.TRAIN.FG_THRESH, cfg.TRAIN.SCALES, \
     cfg.sample_mode, cfg.VGG_ORIGIN, cfg.USE_ALL_GT, cfg.ignore_people, cfg.filter_empty, cfg.DEBUG, args.set_cfgs \
     = get_datasets_info('pascal_voc_0712')
 
-    cfg.datasets_list                 = ['KITTIVOC','widerface','pascal_voc_0712','Kitchen','LISA']
-    # cfg.datasets_list                 = ['LISA','pascal_voc_0712','Kitchen','coco','clipart','watercolor','comic','widerface','dota','deeplesion','KITTIVOC']
-    # cfg.datasets_list                 = ['KITTIVOC','widerface','pascal_voc_0712','Kitchen','LISA','deeplesion','coco','clipart','comic', 'watercolor','dota']
+    cfg.datasets_list                 = args.datasets_list # ['KITTI','widerface','pascal_voc_0712','Kitchen','LISA']
     cfg.imdb_name_list                = univ_info(cfg.datasets_list, 'imdb_name')
     cfg.imdbval_name_list             = univ_info(cfg.datasets_list, 'imdbval_name')
     cfg.train_scales_list             = univ_info(cfg.datasets_list, 'SCALES')
@@ -238,23 +237,20 @@ if __name__ == '__main__':
     cfg.num_classes                   = univ_info(cfg.datasets_list, 'num_classes')
     cfg.universal = True
     cfg.DATA_DIR = args.DATA_DIR
-    cfg.random_resize = args.random_resize == "True"
 
     cfg.POOLING_SIZE_H = 7
     cfg.POOLING_SIZE_W = 7
     cfg.ANCHOR_NUM = np.arange(len(cfg.num_classes))
+    cfg.random_resize = args.random_resize == "True"
+    args.update_chosen = args.update_chosen == 'True'
     for i in range(len(cfg.num_classes)):
         cfg.ANCHOR_NUM[i] = len(cfg.ANCHOR_SCALES_LIST[i])*len(cfg.ANCHOR_RATIOS_LIST[i])
 
     cfg.rpn_univ = args.rpn_univ == 'True'
     if cfg.rpn_univ:
-        cfg.ANCHOR_SCALES_LIST = [[4, 8, 16, 32]]
+        cfg.ANCHOR_SCALES_LIST = [cfg.ANCHOR_SCALES]
         cfg.ANCHOR_RATIOS_LIST = [cfg.ANCHOR_RATIOS]
         cfg.ANCHOR_NUM = [len(cfg.ANCHOR_SCALES)*len(cfg.ANCHOR_RATIOS)]
-
-    cfg.add_filter_num=0 # set 0 if do not add filters
-    cfg.add_filter_ratio=0.0
-    args.update_chosen = args.update_chosen == 'True'
 
     ## CONFIG FILES
     args.cfg_file = "cfgs/{}_ls.yml".format(args.net) if args.large_scale else "cfgs/{}.yml".format(args.net)
@@ -266,9 +262,6 @@ if __name__ == '__main__':
     if args.set_cfgs is not None:
         cfg_from_list(args.set_cfgs)
     cfg.plot_curve = False
-
-    print('Using config:')
-    pprint.pprint(cfg)
     np.random.seed(cfg.RNG_SEED)
 
     cfg.fix_bn = args.fix_bn == "True"
@@ -282,16 +275,16 @@ if __name__ == '__main__':
     cfg.less_blocks = args.less_blocks == 'True'
     if cfg.less_blocks: print('INFO: Using less blocks')
     cfg.num_adapters = args.num_adapters
-    print("INFO: number of se adapter is: ", cfg.num_adapters)
-
+    print("INFO: number of adapter is: ", cfg.num_adapters)
     cfg.mode = 'universal'
-    
     if args.update_chosen:
         print('INFO: Update chosen layers')
 
     torch.backends.cudnn.benchmark = True
     if torch.cuda.is_available() and not args.cuda:
         print("WARNING: You have a CUDA device, so you should probably run with --cuda")
+    # print('Using config:')
+    # pprint.pprint(cfg)
 
     # train set
     # -- Note: Use validation set and disable the flipped to enable faster loading.
@@ -378,7 +371,7 @@ if __name__ == '__main__':
         print('iters_per_epoch for datasets {%s} is: {%d}'%(cfg.imdb_name_list[iters], iters_per_epoch_list[iters]))
         print('num of classes for datasets {%s} is: {%d}'%(cfg.imdb_name_list[iters], cfg.num_classes[iters]))
     # initilize the network here.
-    fasterRCNN = Datasets_Attention(imdb.classes, 50, pretrained=True, class_agnostic=args.class_agnostic, \
+    fasterRCNN = Domain_Attention(imdb.classes, 50, pretrained=True, class_agnostic=args.class_agnostic, \
                                     rpn_batchsize_list=cfg.train_batchsize_list)
     fasterRCNN.create_architecture()
 

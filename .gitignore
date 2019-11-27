@@ -4,13 +4,14 @@ data/
 # Ignore models folder
 models/
 
-# Ignore .pyc .pyx .so .o .pkl .pth files
+# Ignore .pyc .pyx .so .o .pkl .pth .pth.tar files
 *.pyc
 *.pyx
 *.so
 *.o
 *.pkl
 *.pth
+*.pth.tar
 
 # Ignore cache files
 __pycache__/

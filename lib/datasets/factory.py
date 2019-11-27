@@ -12,12 +12,9 @@ from __future__ import print_function
 
 __sets = {}
 from datasets.pascal_voc import pascal_voc
-from datasets.caltech_voc import caltech_voc
 from datasets.kitti_voc import kitti_voc
 from datasets.widerface_voc import widerface_voc
-from datasets.citypersons_voc import citypersons_voc
 from datasets.coco import coco
-from datasets.kaist_voc import kaist_voc
 from datasets.imagenet import imagenet
 from datasets.cross_domain_voc import cross_domain
 from datasets.dota_voc import dota_voc
@@ -78,24 +75,10 @@ for split in ['train', 'val', 'trainval', 'test']:
   __sets[name] = (lambda split=split, year=year: kitti_voc(split, year))
 
 for split in ['train', 'val', 'trainval', 'test']:
-  name = 'kaist_{}'.format(split)
-  year='2007'
-  __sets[name] = (lambda split=split, year=year: kaist_voc(split, year))
-
-for split in ['train', 'val', 'trainval', 'test']:
-    name = 'caltech_{}'.format(split)
-    year = '2007'
-    __sets[name] = (lambda split=split, year=year: caltech_voc(split, year)) 
-
-for split in ['train', 'val', 'trainval', 'test']:
     name = 'widerface_{}'.format(split)
     year = '2007'
     __sets[name] = (lambda split=split, year=year: widerface_voc(split, year)) 
 
-for split in ['train', 'val', 'trainval', 'test']:
-    name = 'citypersons_{}'.format(split)
-    year = '2007'
-    __sets[name] = (lambda split=split, year=year: citypersons_voc(split, year)) 
 # Set up coco_2014_<split>
 for year in ['2014']:
   for split in ['train', 'val', 'minival', 'valminusminival', 'trainval']:
@@ -113,16 +96,6 @@ for year in ['2015']:
   for split in ['test', 'test-dev']:
     name = 'coco_{}_{}'.format(year, split)
     __sets[name] = (lambda split=split, year=year: coco(split, year))
-
-# Set up vg_<split>
-# for version in ['1600-400-20']:
-#     for split in ['minitrain', 'train', 'minival', 'val', 'test']:
-#         name = 'vg_{}_{}'.format(version,split)
-#         __sets[name] = (lambda split=split, version=version: vg(version, split))
-for version in ['150-50-20', '150-50-50', '500-150-80', '750-250-150', '1750-700-450', '1600-400-20']:
-    for split in ['minitrain', 'smalltrain', 'train', 'minival', 'smallval', 'val', 'test']:
-        name = 'vg_{}_{}'.format(version,split)
-        __sets[name] = (lambda split=split, version=version: vg(version, split))
         
 # set up image net.
 for split in ['train', 'val', 'val1', 'val2', 'test']:
