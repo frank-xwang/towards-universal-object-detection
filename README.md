@@ -55,7 +55,7 @@ pip install -r requirements.txt --user
 
 3. Install pytorch0.4.0 with conda:
 ```
-conda install pytorch=0.4.0 cuda90 cudatoolkit==9.0 -c pytorch
+conda install pytorch=0.4.0 cuda80 cudatoolkit==8.0 -c pytorch
 ```
 Please change cuda version accordingly.
 
@@ -129,7 +129,7 @@ Results and models:
 ### Some popular problems
 1. fatal error: cuda.h: No such file or directory:
 
-    Export C_INCLUDE_PATH=/usr/local/cuda-9.0/include:${C_INCLUDE_PATH}, then run "sh make.sh"
+    Export C_INCLUDE_PATH=/usr/local/cuda-8.0/include:${C_INCLUDE_PATH}, then run "sh make.sh"
 
 2. RuntimeError: CUDNN_STATUS_EXECUTION_FAILED:
     
@@ -137,7 +137,7 @@ Results and models:
     
 3. THCudaCheck FAIL file=/opt/conda/conda-bld/pytorch_1524586445097/work/aten/src/THC/THCGeneral.cpp line=844 error=11 : invalid argument
 
-    This error will appear for RTX2080 GPU cards with cuda9.x, you may need to install pytorch from source to solve it. Check [issue](https://github.com/pytorch/pytorch/issues/15797) and [issue](https://discuss.pytorch.org/t/thcudacheck-fail-file-pytorch-aten-src-thc-thcgeneral-cpp/31788/13) for details.
+    This error will appear for RTX2080 GPU cards with cuda8.x or cuda9.x, you may need to install pytorch from source to solve it. Check [issue](https://github.com/pytorch/pytorch/issues/15797) and [issue](https://discuss.pytorch.org/t/thcudacheck-fail-file-pytorch-aten-src-thc-thcgeneral-cpp/31788/13) for details.
 
 If you meet any problems, please feel free to contact me by: frank.xudongwang@gmail.com
 
