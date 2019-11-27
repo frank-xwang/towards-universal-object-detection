@@ -4,9 +4,8 @@ data/
 # Ignore models folder
 models/
 
-# Ignore .pyc .pyx .so .o .pkl .pth .pth.tar files
+# Ignore .pyc .so .o .pkl .pth .pth.tar files
 *.pyc
-*.pyx
 *.so
 *.o
 *.pkl

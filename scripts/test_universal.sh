@@ -1,4 +1,4 @@
-GPU_ID=8
+GPU_ID=1
 batch_size=1
 net=da_res50
 DATA_DIR=data
