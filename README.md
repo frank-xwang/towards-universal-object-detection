@@ -22,6 +22,7 @@ cd towards-universal-object-detection && mkdir data
 Then put all the donwloaded datasets from [UODB benchmark](http://www.svcl.ucsd.edu/projects/universal-detection/) inside data folder and unzip all of them.
 
 All VOC format datasets should be in the structure of:
+
     datasets
         --Annotations
             --0.xml
