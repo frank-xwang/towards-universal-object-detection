@@ -10,7 +10,7 @@ EPOCH=14
 SESSION=8
 CHECKPOINT=13331
 
-### Uncomment the datasest to test
+### Choose the datasest to test
 datasets_test=KITTI
 # datasets_list='KITTI widerface pascal_voc_0712 Kitchen LISA'
 datasets_list='LISA pascal_voc_0712 Kitchen coco clipart watercolor comic widerface dota deeplesion KITTI'
