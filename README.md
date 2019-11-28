@@ -41,13 +41,10 @@ All VOC format datasets should be in the structure of:
 
 You can download pre-trained models in ImageNet from:
 
-* DA-50-5: [Dropbox](https://www.dropbox.com/s/iev3tkbz5wyyuz9/resnet101_caffe.pth?dl=0)
-* DA-50-6: [Dropbox](https://www.dropbox.com/s/iev3tkbz5wyyuz9/resnet101_caffe.pth?dl=0)
-* DA-50-8: [Dropbox](https://www.dropbox.com/s/iev3tkbz5wyyuz9/resnet101_caffe.pth?dl=0)
-* DA-50-11: [Dropbox](https://www.dropbox.com/s/iev3tkbz5wyyuz9/resnet101_caffe.pth?dl=0)
-* ResNet50: [Dropbox](https://www.dropbox.com/s/iev3tkbz5wyyuz9/resnet101_caffe.pth?dl=0)
+* DA-50: [Dropbox](https://drive.google.com/file/d/1kddC55_eByFfMZqDTM9cLj0j1BiHBq9D/view?usp=sharing)
+* ResNet50: [Dropbox](https://drive.google.com/file/d/1_0wFe2soxLkyP5DCCpOJddp1k_xcowv-/view?usp=sharing)
 
-Download them and put them into the data/pretrained_model/.
+Download and unzip DAResNet50.zip, and put them into data/pretrained_model/ folder.
 
 ### Compilation
 
@@ -100,7 +97,7 @@ Above, BATCH_SIZE and WORKER_NUMBER can be set adaptively according to your GPU 
 
 ## Test
 
-If you want to evaluate the detection performance of each datasets, download pre-trained model and put it in models/da_res50/universal/, then simply run:
+If you want to evaluate the detection performance of each datasets, download [pre-trained model]() and put it in models/da_res50/universal/, then simply run:
 ```
 bash scripts/test_universal.sh
 ```
@@ -110,19 +107,18 @@ Pre-trained model will be named as faster_rcnn_universal_SESSION_EPOCH_CHECKPOIN
 
 Results and models for 5 datasets universal model:
 
-  | #Adapter | less_blocks | KITTI | VOC | Widerface | LISA | Kitchen | AVG | Model |
+  | #Adapter | less_blocks | KITTI | VOC | Widerface | LISA | Kitchen | AVG | download |
   | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- |
-  | 3 | True  | 68.0 | 78.8 | 51.9 | 88.1 | 87.1 | 74.8 | [model](https://drive.google.com/file/d/1ItfA4PfeFMHDOgcyzoLlU69_r7AOznu4/view?usp=sharing) |
-  | 5 | True  | 67.9 | 79.2 | 52.2 | 87.5 | 88.5 | 75.1 | [model](https://drive.google.com/file/d/1ItfA4PfeFMHDOgcyzoLlU69_r7AOznu4/view?usp=sharing) |
-  | 7 | True  | 68.2 | 79.9 | 52.1 | 89.7 | 88.0 | 75.6 | [model](https://drive.google.com/file/d/1ItfA4PfeFMHDOgcyzoLlU69_r7AOznu4/view?usp=sharing) |
+  | 3 | True  | 68.0 | 78.8 | 51.9 | 88.1 | 87.1 | 74.8 | [model](https://drive.google.com/file/d/1CbbdBHmyIoALOTBSjZzEKPDHK9QKdUus/view?usp=sharing) |
+  | 5 | True  | 67.9 | 79.2 | 52.2 | 87.5 | 88.5 | 75.1 | [model](https://drive.google.com/file/d/1x5Rd33yeUXicOEXH6TIqhfYBX8wqmDRI/view?usp=sharing) |
+  | 7 | True  | 68.2 | 79.9 | 52.1 | 89.7 | 88.0 | 75.6 | [model](https://drive.google.com/file/d/1gLQZGn6Vb-AzfzFmf7YCZLqE_Mfwzyq6/view?usp=sharing) |
 
 Results and models for 11 datasets universal model:
 
-  | #Adapter | less_blocks | KITTI | VOC | Widerface | LISA | Kitchen | COCO | DOTA | DeepLesion | Comic | Clipart | Watercolor | AVG | Model |
+  | #Adapter | less_blocks | KITTI | VOC | Widerface | LISA | Kitchen | COCO | DOTA | DeepLesion | Comic | Clipart | Watercolor | AVG | download |
   | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- |
-  | 6 | True  | 67.6 | 82.7 | 51.8 | 87.9 | 88.7 | 46.8 | 57.0 | 54.8 | 52.6 | 54.6 | 58.2 | 63.9 | [model](https://drive.google.com/file/d/1ItfA4PfeFMHDOgcyzoLlU69_r7AOznu4/view?usp=sharing) |
-  | 8 | True  | 68.0 | 82.4 | 51.3 | 87.6 | 90.0 | 47.0 | 56.3 | 53.4 | 53.4 | 55.8 | 60.6 | 64.2 | [model](https://drive.google.com/file/d/1ItfA4PfeFMHDOgcyzoLlU69_r7AOznu4/view?usp=sharing) |
-  | 11 | False  | 68.1 | 82.0 | 51.6 | 88.3 | 90.1 | 46.5 | 57.0 | 57.3 | 50.7 | 53.1 | 58.4 | 63.8 | [model](https://drive.google.com/file/d/1ItfA4PfeFMHDOgcyzoLlU69_r7AOznu4/view?usp=sharing) |
+  | 6 | True  | 67.6 | 82.7 | 51.8 | 87.9 | 88.7 | 46.8 | 57.0 | 54.8 | 52.6 | 54.6 | 58.2 | 63.9 | [model](https://drive.google.com/file/d/1uyQ-BX_p8T3HEaJrsvUTshmnIy80Et5M/view?usp=sharing) |
+  | 8 | True  | 68.0 | 82.4 | 51.3 | 87.6 | 90.0 | 47.0 | 56.3 | 53.4 | 53.4 | 55.8 | 60.6 | 64.2 | [model](https://drive.google.com/file/d/1WtthQFm_SEbMVcQnZnD8Xgm3n-msDw1B/view?usp=sharing) |
 
 ### Some popular problems
 1. fatal error: cuda.h: No such file or directory:

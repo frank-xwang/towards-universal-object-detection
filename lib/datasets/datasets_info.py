@@ -86,8 +86,8 @@ def get_datasets_info(dataset, use_dict = False, test=False):
         datasets_info['RPN_NMS_THRESH'] = 0.65
         datasets_info['FG_THRESH'] = 0.45
         datasets_info['imdb_name'] = "kittivoc_train"
-        datasets_info['SCALES']=(576,)
-        datasets_info['SCALES_TEST']=(576,)
+        datasets_info['SCALES']=(600,)
+        datasets_info['SCALES_TEST']=(600,)
         datasets_info['MAX_NUM_GT_BOXES'] = 20
         ## scales*11 is the new_width, new_width*ratio is new height
         datasets_info['set_cfgs'] = ['ANCHOR_SCALES', '[0.75, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24, 30]', 'ANCHOR_RATIOS', '[0.5, 1, 2]', 'MAX_NUM_GT_BOXES', '20']

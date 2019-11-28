@@ -1,18 +1,19 @@
-GPU_ID=8
+GPU_ID=0
 batch_size=1
 net=da_res50
 DATA_DIR=data
-num_adapters=11
-less_blocks=False
+num_adapters=8
+less_blocks=True # False
 
 ### Arguments for checkpoints
 EPOCH=14
-SESSION=11
+SESSION=8
 CHECKPOINT=13331
 
 ### Uncomment the datasest to test
-datasets_test=widerface
-datasets_list='KITTI widerface pascal_voc_0712 Kitchen LISA deeplesion coco clipart comic watercolor dota'
+datasets_test=KITTI
+# datasets_list='KITTI widerface pascal_voc_0712 Kitchen LISA'
+datasets_list='LISA pascal_voc_0712 Kitchen coco clipart watercolor comic widerface dota deeplesion KITTI'
 
 CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=${GPU_ID} \
 python test_universal.py \

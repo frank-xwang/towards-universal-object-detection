@@ -1,7 +1,7 @@
-GPU_ID=8,9
-BATCH_SIZE=4
+GPU_ID=0,1,2,3,4,5,6,7
+BATCH_SIZE=16
 net=da_res50
-WORKER_NUMBER=4
+WORKER_NUMBER=2
 LEARNING_RATE=0.01 # lr=0.01 for BATCH_SIZE=16
 DECAY_STEP=10
 SAVE_SESSION=11
@@ -16,10 +16,10 @@ use_bn_mux=False
 update_chosen=False
 randomly_chosen_datasets=True
 warmup_steps=0
-num_adapters=5
-less_blocks=True
+num_adapters=11
+less_blocks=False
 datasets_list='KITTI widerface pascal_voc_0712 Kitchen LISA deeplesion coco clipart comic watercolor dota'
-datasets_list='KITTI comic'
+# datasets_list='KITTI widerface pascal_voc_0712 Kitchen LISA'
 # resume=True
 # checkepoch=7
 # checksession=11083

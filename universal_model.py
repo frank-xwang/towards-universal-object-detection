@@ -221,7 +221,7 @@ if __name__ == '__main__':
     cfg.sample_mode, cfg.VGG_ORIGIN, cfg.USE_ALL_GT, cfg.ignore_people, cfg.filter_empty, cfg.DEBUG, args.set_cfgs \
     = get_datasets_info('pascal_voc_0712')
 
-    cfg.datasets_list                 = args.datasets_list # ['KITTI','widerface','pascal_voc_0712','Kitchen','LISA']
+    cfg.datasets_list                 = args.datasets_list
     cfg.imdb_name_list                = univ_info(cfg.datasets_list, 'imdb_name')
     cfg.imdbval_name_list             = univ_info(cfg.datasets_list, 'imdbval_name')
     cfg.train_scales_list             = univ_info(cfg.datasets_list, 'SCALES')
