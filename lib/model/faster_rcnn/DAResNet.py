@@ -259,7 +259,8 @@ def da_resnet152(pretrained=False):
 
 class Domain_Attention(_fasterRCNN):
   def __init__(self, classes, num_layers=101, pretrained=False, class_agnostic=False, rpn_batchsize_list=None):
-    self.model_path = 'data/pretrained_model/se_resnet' + str(num_layers) + '.pth.tar'
+    extension = '_less.pth.tar' if cfg.less_blocks else '_full.pth.tar'
+    self.model_path = 'data/pretrained_model/da_resnet' + str(num_layers) + '_' + str(cfg.num_adapters) + extension
     if num_layers == 18:
       self.dout_base_model = 256
     else:
@@ -278,70 +279,7 @@ class Domain_Attention(_fasterRCNN):
     if self.pretrained == True:
       state_dict = torch.load(self.model_path)['state_dict']     
       print("Loading pretrained weights from %s" %(self.model_path))
-      new_state_dict = {}
-      
-      for k, v in state_dict.items():
-        k_list = k.split('.')
-        name = ''
-        for n in range(len(k_list)-1):
-          if n == 0: continue
-          if 'se' == k_list[n]: 
-            se_name = name + 'domain_attention.SE_Layers.'
-          name += k_list[n] + '.'
-        k_new = name + k_list[-1]
-        if k_new in resnet.state_dict():
-          new_state_dict[k_new] = v
-        if 'bn' in k and 'layer' in k:
-          for n in range(len(cfg.num_classes)):
-            current = name + str(n) + '.' + k_list[-1]
-            if current in resnet.state_dict():
-              new_state_dict[current] = v
-        elif 'downsample.1.' in  k:
-          for n in range(len(cfg.num_classes)):
-            current = name + 'bn.' + str(n) + '.' + k_list[-1]
-            if current in resnet.state_dict():
-              new_state_dict[current] = v
-        elif '.se.' in k:
-          for n in range(cfg.num_adapters):
-            current = se_name + str(n) + '.' + k_list[-3] + '.' + k_list[-2] + '.' + k_list[-1]
-            #print('se: ',current)
-            if current in resnet.state_dict():
-              new_state_dict[current] = v          
-        else:
-          if k_new in resnet.state_dict():
-            new_state_dict[k_new] = v
-        for id in range(2):
-          se_weight_name = k_list[1] + '.' + k_list[2] + '.domain_attention.weight_' + str(id+1)
-          if se_weight_name in resnet.state_dict():
-            new_state_dict[se_weight_name] = resnet.state_dict()[se_weight_name]
-            #print(se_weight_name)
-          se_bias_name = k_list[1] + '.' + k_list[2] + '.domain_attention.bias_' + str(id+1)
-          if se_bias_name in resnet.state_dict():
-            new_state_dict[se_bias_name] = resnet.state_dict()[se_bias_name]
-          se_weight_name = k_list[1] + '.' + k_list[2] + '.domain_attention.fc_'
-          for appendix in ['1.weight','1.bias','2.weight','2.bias','3.weight','3.bias',\
-                           '4.weight','4.bias','5.weight','5.bias']:
-            final_name = se_weight_name + appendix
-            if final_name in resnet.state_dict():
-              new_state_dict[final_name] = resnet.state_dict()[final_name]
-
-        if 'fc.0.' in k:
-          for n in range(len(cfg.num_classes)):
-            current = se_name + str(n) + '.' + 'linear1.' + k_list[-1]
-            if current in resnet.state_dict():
-              new_state_dict[current] = v
-        elif 'fc.2.' in k:
-          for n in range(len(cfg.num_classes)):
-            current = se_name + str(n) + '.' + 'linear2.' + k_list[-1]
-            if current in resnet.state_dict():
-              new_state_dict[current] = v
-      for n in range(len(cfg.num_classes)):
-        for tail in ['weight', 'bias']:
-          for mid in ['3.5', '2.3']:
-            current = 'layer' + mid + '.se.' + str(n) + '.seloss.' + tail
-            if current in resnet.state_dict():
-              new_state_dict[current] = resnet.state_dict()[current]
-      resnet.load_state_dict(new_state_dict)
+      resnet.load_state_dict(state_dict)
     # Build resnet.
     # RCNN_base[0]: resnet.conv1, RCNN_base[1]: resnet.bn1 ......
     self.RCNN_base = nn.Sequential(resnet.conv1, resnet.bn1,resnet.relu,

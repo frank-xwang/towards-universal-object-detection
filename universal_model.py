@@ -31,7 +31,7 @@ from model.utils.net_utils import weights_normal_init, save_net, load_net, \
       adjust_learning_rate, save_checkpoint, clip_gradient, update_chosen_se_layer, print_chosen_se_layer
 from model.faster_rcnn.resnet_uni import resnet
 from datasets.datasets_info import get_datasets_info
-from model.faster_rcnn.DAResNet_Save_Model import Domain_Attention
+from model.faster_rcnn.DAResNet import Domain_Attention
 from datasets.datasets_info import univ_info
 import torch.nn.functional as F
 

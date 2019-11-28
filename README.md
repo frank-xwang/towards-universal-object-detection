@@ -21,6 +21,15 @@ cd towards-universal-object-detection && mkdir data
 
 Then put all the donwloaded datasets from [UODB benchmark](http://www.svcl.ucsd.edu/projects/universal-detection/) inside data folder and unzip all of them.
 
+All VOC format datasets should be in the structure of:
+    datasets
+        --Annotations
+            --0.xml
+        --ImageSets
+            --Main
+        --JPEGImages
+            --0.jpg or 0.png
+
 ### prerequisites
 
 * Python 3.6
@@ -86,7 +95,7 @@ To train a model with 11 adapters, simply run:
 ```
 bash scripts/train_universal.sh
 ```
-Above, BATCH_SIZE and WORKER_NUMBER can be set adaptively according to your GPU memory size.
+Above, BATCH_SIZE and WORKER_NUMBER can be set adaptively according to your GPU memory size. Specify the specific GPU device ID(GPU_ID), network(net), data directory(DATA_DIR), number of adapters(num_adapters), model session(SESSION), checkepoch(EPOCH), checkpoint iterations(CHECKPOINT), list of datasets to train(datasets_list), using less domain attention blocks(less_blocks) and etc. before running train_universal.sh file.
 
 ## Test
 
@@ -110,8 +119,8 @@ Results and models for 11 datasets universal model:
 
   | #Adapter | less_blocks | KITTI | VOC | Widerface | LISA | Kitchen | COCO | DOTA | DeepLesion | Comic | Clipart | Watercolor | AVG | Model |
   | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- |
-  | 6 | False  | 67.6 | 82.7 | 51.8 | 87.9 | 88.7 | 46.8 | 57.0 | 54.8 | 52.6 | 54.6 | 58.2 | 63.9 | [model](https://drive.google.com/file/d/1ItfA4PfeFMHDOgcyzoLlU69_r7AOznu4/view?usp=sharing) |
-  | 8 | False  | 68.0 | 82.4 | 51.3 | 87.6 | 90.0 | 47.0 | 56.3 | 53.4 | 53.4 | 55.8 | 60.6 | 64.2 | [model](https://drive.google.com/file/d/1ItfA4PfeFMHDOgcyzoLlU69_r7AOznu4/view?usp=sharing) |
+  | 6 | True  | 67.6 | 82.7 | 51.8 | 87.9 | 88.7 | 46.8 | 57.0 | 54.8 | 52.6 | 54.6 | 58.2 | 63.9 | [model](https://drive.google.com/file/d/1ItfA4PfeFMHDOgcyzoLlU69_r7AOznu4/view?usp=sharing) |
+  | 8 | True  | 68.0 | 82.4 | 51.3 | 87.6 | 90.0 | 47.0 | 56.3 | 53.4 | 53.4 | 55.8 | 60.6 | 64.2 | [model](https://drive.google.com/file/d/1ItfA4PfeFMHDOgcyzoLlU69_r7AOznu4/view?usp=sharing) |
   | 11 | False  | 68.1 | 82.0 | 51.6 | 88.3 | 90.1 | 46.5 | 57.0 | 57.3 | 50.7 | 53.1 | 58.4 | 63.8 | [model](https://drive.google.com/file/d/1ItfA4PfeFMHDOgcyzoLlU69_r7AOznu4/view?usp=sharing) |
 
 ### Some popular problems
