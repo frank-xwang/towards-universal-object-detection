@@ -259,6 +259,9 @@ def da_resnet152(pretrained=False):
 
 class Domain_Attention(_fasterRCNN):
   def __init__(self, classes, num_layers=101, pretrained=False, class_agnostic=False, rpn_batchsize_list=None):
+    extension = '_less.pth.tar' if cfg.less_blocks else '_full.pth.tar'
+    self.model_path = 'data/pretrained_model/da_resnet' + str(num_layers) + '_' + str(cfg.num_adapters) + extension
+    print(self.model_path)
     self.model_path = 'data/pretrained_model/se_resnet' + str(num_layers) + '.pth.tar'
     if num_layers == 18:
       self.dout_base_model = 256
@@ -343,8 +346,8 @@ class Domain_Attention(_fasterRCNN):
               new_state_dict[current] = resnet.state_dict()[current]
       resnet.load_state_dict(new_state_dict)
       checkpoint_tosave = {}
-      checkpoint_tosave['model'] = new_state_dict
-      torch.save(checkpoint_tosave, 'daresnet50_2_full.pth.tar')
+      checkpoint_tosave['state_dict'] = new_state_dict
+      torch.save(checkpoint_tosave, 'daresnet50_11_full.pth.tar')
     # Build resnet.
     # RCNN_base[0]: resnet.conv1, RCNN_base[1]: resnet.bn1 ......
     self.RCNN_base = nn.Sequential(resnet.conv1, resnet.bn1,resnet.relu,

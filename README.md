@@ -69,46 +69,24 @@ As pointed out by [ruotianluo/pytorch-faster-rcnn](https://github.com/ruotianluo
 
   | GPU model  | Architecture |
   | ------------- | ------------- |
+  | Tesla K80 (AWS p2.xlarge) | sm_37 |
   | TitanX (Maxwell/Pascal) | sm_52 |
   | GTX 960M | sm_50 |
   | GTX 1080 (Ti) | sm_61 |
   | Grid K520 (AWS g2.2xlarge) | sm_30 |
-  | Tesla K80 (AWS p2.xlarge) | sm_37 |
+  | RTX 2080 (Ti) | sm_70 |
 
 More details about setting the architecture can be found [here](https://developer.nvidia.com/cuda-gpus) or [here](http://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/)
 
 ## Train
 
-Before training, set the right directory to save and load the trained models. Change the arguments "save_dir" and "load_dir" in trainval_net.py and test_net.py to adapt to your environment.
+Before training, set the right directory to save and load the trained models. Change the arguments "save_dir" and "load_dir" in universal_model.py to adapt to your environment.
 
-To train a faster R-CNN model with vgg16 on pascal_voc, simply run:
+To train a model with 11 adapters, simply run:
 ```
-CUDA_VISIBLE_DEVICES=$GPU_ID python trainval_net.py \
-                   --dataset pascal_voc --net da-50 \
-                   --bs $BATCH_SIZE --nw $WORKER_NUMBER \
-                   --lr $LEARNING_RATE --lr_decay_step $DECAY_STEP \
-                   --cuda
+bash scripts/train_universal.sh
 ```
-where 'bs' is the batch size with default 1. Alternatively, to train with resnet101 on pascal_voc, simple run:
-```
- CUDA_VISIBLE_DEVICES=$GPU_ID python trainval_net.py \
-                    --dataset pascal_voc --net da-50 \
-                    --bs $BATCH_SIZE --nw $WORKER_NUMBER \
-                    --lr $LEARNING_RATE --lr_decay_step $DECAY_STEP \
-                    --cuda
-```
-Above, BATCH_SIZE and WORKER_NUMBER can be set adaptively according to your GPU memory size. **On Titan Xp with 12G memory, it can be up to 4**.
-
-If you have multiple (say 8) Titan Xp GPUs, then just use them all! Try:
-```
-python trainval_net.py --dataset pascal_voc --net da-50 \
-                       --bs 24 --nw 8 \
-                       --lr $LEARNING_RATE --lr_decay_step $DECAY_STEP \
-                       --cuda --mGPUs
-
-```
-
-Change dataset to "coco" or 'vg' if you want to train on COCO or Visual Genome.
+Above, BATCH_SIZE and WORKER_NUMBER can be set adaptively according to your GPU memory size.
 
 ## Test
 
@@ -120,10 +98,20 @@ Specify the specific GPU device ID(GPU_ID), network(net), data directory(DATA_DI
 
 Pre-trained model will be named as faster_rcnn_universal_SESSION_EPOCH_CHECKPOINT.pth
 
-Results and models:
+Results and models for 5 datasets universal model:
+
+  | #Adapter | less_blocks | KITTI | VOC | Widerface | LISA | Kitchen | AVG | Model |
+  | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- |
+  | 3 | True  | 68.0 | 78.8 | 51.9 | 88.1 | 87.1 | 74.8 | [model](https://drive.google.com/file/d/1ItfA4PfeFMHDOgcyzoLlU69_r7AOznu4/view?usp=sharing) |
+  | 5 | True  | 67.9 | 79.2 | 52.2 | 87.5 | 88.5 | 75.1 | [model](https://drive.google.com/file/d/1ItfA4PfeFMHDOgcyzoLlU69_r7AOznu4/view?usp=sharing) |
+  | 7 | True  | 68.2 | 79.9 | 52.1 | 89.7 | 88.0 | 75.6 | [model](https://drive.google.com/file/d/1ItfA4PfeFMHDOgcyzoLlU69_r7AOznu4/view?usp=sharing) |
+
+Results and models for 11 datasets universal model:
 
   | #Adapter | less_blocks | KITTI | VOC | Widerface | LISA | Kitchen | COCO | DOTA | DeepLesion | Comic | Clipart | Watercolor | AVG | Model |
   | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- |
+  | 6 | False  | 67.6 | 82.7 | 51.8 | 87.9 | 88.7 | 46.8 | 57.0 | 54.8 | 52.6 | 54.6 | 58.2 | 63.9 | [model](https://drive.google.com/file/d/1ItfA4PfeFMHDOgcyzoLlU69_r7AOznu4/view?usp=sharing) |
+  | 8 | False  | 68.0 | 82.4 | 51.3 | 87.6 | 90.0 | 47.0 | 56.3 | 53.4 | 53.4 | 55.8 | 60.6 | 64.2 | [model](https://drive.google.com/file/d/1ItfA4PfeFMHDOgcyzoLlU69_r7AOznu4/view?usp=sharing) |
   | 11 | False  | 68.1 | 82.0 | 51.6 | 88.3 | 90.1 | 46.5 | 57.0 | 57.3 | 50.7 | 53.1 | 58.4 | 63.8 | [model](https://drive.google.com/file/d/1ItfA4PfeFMHDOgcyzoLlU69_r7AOznu4/view?usp=sharing) |
 
 ### Some popular problems
@@ -137,7 +125,7 @@ Results and models:
     
 3. THCudaCheck FAIL file=/opt/conda/conda-bld/pytorch_1524586445097/work/aten/src/THC/THCGeneral.cpp line=844 error=11 : invalid argument
 
-    This error will appear for RTX2080 GPU cards with cuda8.x or cuda9.x, you may need to install pytorch from source to solve it. Check [issue](https://github.com/pytorch/pytorch/issues/15797) and [issue](https://discuss.pytorch.org/t/thcudacheck-fail-file-pytorch-aten-src-thc-thcgeneral-cpp/31788/13) for details.
+    This error will appear for RTX2080 GPU cards with cuda8.x or cuda9.x, you may need to install pytorch from source to solve it. Check [issue](https://github.com/pytorch/pytorch/issues/15797) and [issue](https://discuss.pytorch.org/t/thcudacheck-fail-file-pytorch-aten-src-thc-thcgeneral-cpp/31788/13) for details. This error can be ignored within inference time.
 
 If you meet any problems, please feel free to contact me by: frank.xudongwang@gmail.com
 
