@@ -97,7 +97,7 @@ Above, BATCH_SIZE and WORKER_NUMBER can be set adaptively according to your GPU 
 
 ## Test
 
-If you want to evaluate the detection performance of each datasets, download [pre-trained model]() and put it in models/da_res50/universal/, then simply run:
+If you want to evaluate the detection performance of each datasets, download pre-trained model and put it in models/da_res50/universal/, then simply run:
 ```
 bash scripts/test_universal.sh
 ```
